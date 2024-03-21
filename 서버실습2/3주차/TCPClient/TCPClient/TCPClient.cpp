@@ -87,20 +87,16 @@ int main(int argc, char *argv[])
     int len;
 
     //추가
-    time_t timer;
-    timer = time(NULL);
-    struct tm* t;
-    t = localtime(&timer);
-    sprintf(buf, "%d년 %d월 %d일 %d시 %d분 %d초에 접속",
-        t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+   /* sprintf(buf, "connect");
     retval = send(sock, buf, strlen(buf), 0);
     if (retval == SOCKET_ERROR) {
         sprintf_s(msg, "send");
         err_display(msg);
         return 0;
     }
-    retval = recvn(sock, buf, strlen(buf), 0);
-    printf("%s", buf);
+    retval = recvn(sock, buf, 38, 0);
+    buf[38] = '\0';
+    printf("%s", buf);*/
 
     // 서버와 데이터 통신
     while (1) {
