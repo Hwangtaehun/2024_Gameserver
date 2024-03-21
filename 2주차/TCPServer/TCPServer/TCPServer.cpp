@@ -87,9 +87,17 @@ int main(int argc, char *argv[])
         printf("\n[TCP 서버] 클라이언트 접속: IP 주소=%s, 포트 번호=%d\n",
             inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
 
+        time_t timer;
+        timer = time(NULL);
+        struct tm* t;
+        t = localtime(&timer);
+
         retval = recv(client_sock, buf, BUFSIZE, 0);
         buf[retval] = '\0';
-        retval = send(client_sock, buf, strlen(buf), 0);
+        printf("%s\n", buf);
+        sprintf(buf, "%d년 %d월 %d일 %d시 %d분 %d초에 접속",
+            t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+        retval = send(client_sock, buf, strlen(buf) + 2, 0);
         if (retval == SOCKET_ERROR) {
             sprintf_s(msg, "accept");
             err_display(msg);
@@ -110,8 +118,8 @@ int main(int argc, char *argv[])
 
             // 받은 데이터 출력
             buf[retval] = '\0';
-            printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
-                ntohs(clientaddr.sin_port), buf);
+            printf("[TCP/%s:%d] %s %d\n", inet_ntoa(clientaddr.sin_addr),
+                ntohs(clientaddr.sin_port), buf, strlen(buf));
 
             // 데이터 보내기
             retval = send(client_sock, buf, retval, 0);

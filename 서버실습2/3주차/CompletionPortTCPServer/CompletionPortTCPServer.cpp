@@ -7,8 +7,7 @@
 #define SERVERPORT 9000
 #define BUFSIZE    512
 
-//추가
-char open_msg[36];
+char con_msg[36];
 
 // 소켓 정보 저장을 위한 구조체
 struct SOCKETINFO
@@ -82,12 +81,6 @@ int main(int argc, char* argv[])
 			err_display("accept()");
 			break;
 		}
-		//추가
-		time_t timer;
-		timer = time(NULL);
-		struct tm* t;
-		t = localtime(&timer);
-		sprintf(open_msg, "%d년 %d월 %d일 %d시 %d분 %d초에 접속되었습니다.", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
 		printf("[TCP 서버] 클라이언트 접속: IP 주소=%s, 포트 번호=%d\n",
 			inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
 
@@ -107,7 +100,6 @@ int main(int argc, char* argv[])
 		flags = 0;
 		retval = WSARecv(client_sock, &ptr->wsabuf, 1, &recvbytes,
 			&flags, &ptr->overlapped, NULL);
-
 		if (retval == SOCKET_ERROR) {
 			if (WSAGetLastError() != ERROR_IO_PENDING) {
 				err_display("WSARecv()");
@@ -126,8 +118,6 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 {
 	int retval;
 	HANDLE hcp = (HANDLE)arg;
-
-	bool first = true;
 
 	while (1) {
 		// 비동기 입출력 완료 기다리기
