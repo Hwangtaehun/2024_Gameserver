@@ -1,8 +1,10 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS // 최신 VC++ 컴파일 시 경고 방지
+#define _CRT_SECURE_NO_WARNINGS
 #pragma comment(lib, "ws2_32")
 #include <winsock2.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 #define SERVERIP   "127.0.0.1"
 #define SERVERPORT 9000
@@ -83,6 +85,22 @@ int main(int argc, char *argv[])
     // 데이터 통신에 사용할 변수
     char buf[BUFSIZE + 1];
     int len;
+
+    //추가
+    time_t timer;
+    timer = time(NULL);
+    struct tm* t;
+    t = localtime(&timer);
+    sprintf(buf, "%d년 %d월 %d일 %d시 %d분 %d초에 접속",
+        t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+    retval = send(sock, buf, strlen(buf), 0);
+    if (retval == SOCKET_ERROR) {
+        sprintf_s(msg, "send");
+        err_display(msg);
+        return 0;
+    }
+    retval = recvn(sock, buf, strlen(buf), 0);
+    printf("%s", buf);
 
     // 서버와 데이터 통신
     while (1) {

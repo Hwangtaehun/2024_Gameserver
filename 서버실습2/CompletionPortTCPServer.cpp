@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 		struct tm* t;
 		t = localtime(&timer);
 		sprintf(open_msg, "%d년 %d월 %d일 %d시 %d분 %d초에 접속되었습니다.", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-
+		
 		printf("[TCP 서버] 클라이언트 접속: IP 주소=%s, 포트 번호=%d\n", 
 			inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
 
@@ -108,8 +108,6 @@ int main(int argc, char *argv[])
 		flags = 0;
 		retval = WSARecv(client_sock, &ptr->wsabuf, 1, &recvbytes,
 			&flags, &ptr->overlapped, NULL);
-
-		//추가
 
 		if(retval == SOCKET_ERROR){
 			if(WSAGetLastError() != ERROR_IO_PENDING){
@@ -144,25 +142,6 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 		SOCKADDR_IN clientaddr;
 		int addrlen = sizeof(clientaddr);
 		getpeername(ptr->sock, (SOCKADDR *)&clientaddr, &addrlen);
-
-		//접속시간
-		/*if (first) {
-			first = false;
-			printf("%s", open_msg);
-			ZeroMemory(&ptr->overlapped, sizeof(ptr->overlapped));
-			ptr->wsabuf.buf = open_msg + ptr->sendbytes;
-			ptr->wsabuf.len = ptr->recvbytes - ptr->sendbytes;
-
-			DWORD sendbytes;
-			retval = WSASend(ptr->sock, &ptr->wsabuf, 1,
-				&sendbytes, 0, &ptr->overlapped, NULL);
-			if (retval == SOCKET_ERROR) {
-				if (WSAGetLastError() != WSA_IO_PENDING) {
-					err_display("WSASend()");
-				}
-				continue;
-			}
-		}*/
 		
 		// 비동기 입출력 결과 확인
 		if(retval == 0 || cbTransferred == 0){
@@ -190,6 +169,15 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 		}
 		else{
 			ptr->sendbytes += cbTransferred;
+		}
+
+		//접속시간
+		if (first) {
+			ZeroMemory(&ptr->overlapped, sizeof(ptr->overlapped));
+			DWORD sendbytes;
+			first = false;
+			printf("실행\n");
+			retval = WSASend(ptr->sock, &open_msg, 1, &sendbytes, 0, &ptr->overlapped, NULL);
 		}
 		
 		if(ptr->recvbytes > ptr->sendbytes){

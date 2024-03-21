@@ -1,8 +1,10 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS // 최신 VC++ 컴파일 시 경고 방지
+#define _CRT_SECURE_NO_WARNINGS
 #pragma comment(lib, "ws2_32")
 #include <winsock2.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 #define SERVERPORT 9000
 #define BUFSIZE    512
@@ -38,6 +40,7 @@ int main(int argc, char *argv[])
 {
     int retval;
     char msg[9];
+    bool first = true;
 
     // 윈속 초기화
     WSADATA wsa;
@@ -83,6 +86,15 @@ int main(int argc, char *argv[])
         // 접속한 클라이언트 정보 출력
         printf("\n[TCP 서버] 클라이언트 접속: IP 주소=%s, 포트 번호=%d\n",
             inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
+
+        retval = recv(client_sock, buf, BUFSIZE, 0);
+        buf[retval] = '\0';
+        retval = send(client_sock, buf, strlen(buf), 0);
+        if (retval == SOCKET_ERROR) {
+            sprintf_s(msg, "accept");
+            err_display(msg);
+            break;
+        }
 
         // 클라이언트와 데이터 통신
         while (1) {
