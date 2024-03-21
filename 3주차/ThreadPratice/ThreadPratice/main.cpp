@@ -2,7 +2,7 @@
 	ThreadAdderOne.cpp
 	프로그램 설명: 프로세스 유사형태 쓰레드 생성.
 */
-
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <windows.h>
 #include <tchar.h>
@@ -41,9 +41,10 @@ int _tmain(int argc, TCHAR* argv[])
 	DWORD total = 0;
 	DWORD result = 0;
 
-	for (int i = 0; i < 10; i++) {
-		scanf_s("%d ", &paramThread[i]);
+	for (int i = 0; i < 9; i++) {
+		scanf("%d ", &paramThread[i]);
 	}
+	scanf("%d", &paramThread[9]);
 	
 	last_thread_first = paramThread[6];
 
