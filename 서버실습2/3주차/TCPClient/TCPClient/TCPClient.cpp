@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
     int len;
 
     //추가
-   /* sprintf(buf, "connect");
+    sprintf(buf, "connect");
     retval = send(sock, buf, strlen(buf), 0);
     if (retval == SOCKET_ERROR) {
         sprintf_s(msg, "send");
@@ -95,8 +95,8 @@ int main(int argc, char *argv[])
         return 0;
     }
     retval = recvn(sock, buf, 38, 0);
-    buf[38] = '\0';
-    printf("%s", buf);*/
+    buf[retval] = '\0';
+    printf("%s", buf);
 
     // 서버와 데이터 통신
     while (1) {

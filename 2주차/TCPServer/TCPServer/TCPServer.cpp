@@ -94,10 +94,9 @@ int main(int argc, char *argv[])
 
         retval = recv(client_sock, buf, BUFSIZE, 0);
         buf[retval] = '\0';
-        printf("%s\n", buf);
         sprintf(buf, "%d년 %d월 %d일 %d시 %d분 %d초에 접속",
             t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-        retval = send(client_sock, buf, strlen(buf) + 2, 0);
+        retval = send(client_sock, buf, strlen(buf) + 1, 0);
         if (retval == SOCKET_ERROR) {
             sprintf_s(msg, "accept");
             err_display(msg);

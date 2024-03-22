@@ -7,7 +7,7 @@
 #define SERVERPORT 9000
 #define BUFSIZE    512
 
-char con_msg[36];
+bool first = true;
 
 // 소켓 정보 저장을 위한 구조체
 struct SOCKETINFO
@@ -25,6 +25,8 @@ DWORD WINAPI WorkerThread(LPVOID arg);
 // 오류 출력 함수
 void err_quit(char* msg);
 void err_display(char* msg);
+bool send(SOCKETINFO* ptr, int retval);
+bool recieve(SOCKETINFO* ptr, int retval);
 
 int main(int argc, char* argv[])
 {
@@ -84,6 +86,15 @@ int main(int argc, char* argv[])
 		printf("[TCP 서버] 클라이언트 접속: IP 주소=%s, 포트 번호=%d\n",
 			inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
 
+		//추가
+		time_t timer;
+		char con_msg[36];
+		timer = time(NULL);
+		struct tm* t;
+		t = localtime(&timer);
+		sprintf(con_msg, "%d년 %d월 %d일 %d시 %d분 %d초에 접속",
+			t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+
 		// 소켓과 입출력 완료 포트 연결
 		CreateIoCompletionPort((HANDLE)client_sock, hcp, client_sock, 0);
 
@@ -106,6 +117,21 @@ int main(int argc, char* argv[])
 			}
 			continue;
 		}
+
+		//추가
+		ptr->buf[ptr->recvbytes] = '\0';
+		ptr->wsabuf.buf = con_msg;
+		ptr->wsabuf.len = BUFSIZE;
+		retval = WSASend(ptr->sock, &ptr->wsabuf, 1,&recvbytes,
+			0, &ptr->overlapped, NULL);
+		if (retval == SOCKET_ERROR) {
+			if (WSAGetLastError() != ERROR_IO_PENDING) {
+				err_display("WSASend()");
+				printf("WSASEND()\n");
+			}
+			continue;
+		}
+		first = false;
 	}
 
 	// 윈속 종료
@@ -126,6 +152,10 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 		SOCKETINFO* ptr;
 		retval = GetQueuedCompletionStatus(hcp, &cbTransferred,
 			(LPDWORD)&client_sock, (LPOVERLAPPED*)&ptr, INFINITE);
+
+		if (first) {
+			continue;
+		}
 
 		// 클라이언트 정보 얻기
 		SOCKADDR_IN clientaddr;
@@ -151,7 +181,7 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 		if (ptr->recvbytes == 0) {
 			ptr->recvbytes = cbTransferred;
 			ptr->sendbytes = 0;
-			// 받은 데이터 출력
+
 			ptr->buf[ptr->recvbytes] = '\0';
 			printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
 				ntohs(clientaddr.sin_port), ptr->buf);
@@ -162,17 +192,7 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 
 		if (ptr->recvbytes > ptr->sendbytes) {
 			// 데이터 보내기
-			ZeroMemory(&ptr->overlapped, sizeof(ptr->overlapped));
-			ptr->wsabuf.buf = ptr->buf + ptr->sendbytes;
-			ptr->wsabuf.len = ptr->recvbytes - ptr->sendbytes;
-
-			DWORD sendbytes;
-			retval = WSASend(ptr->sock, &ptr->wsabuf, 1,
-				&sendbytes, 0, &ptr->overlapped, NULL);
-			if (retval == SOCKET_ERROR) {
-				if (WSAGetLastError() != WSA_IO_PENDING) {
-					err_display("WSASend()");
-				}
+			if (send(ptr, retval)) {
 				continue;
 			}
 		}
@@ -180,24 +200,54 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 			ptr->recvbytes = 0;
 
 			// 데이터 받기
-			ZeroMemory(&ptr->overlapped, sizeof(ptr->overlapped));
-			ptr->wsabuf.buf = ptr->buf;
-			ptr->wsabuf.len = BUFSIZE;
-
-			DWORD recvbytes;
-			DWORD flags = 0;
-			retval = WSARecv(ptr->sock, &ptr->wsabuf, 1,
-				&recvbytes, &flags, &ptr->overlapped, NULL);
-			if (retval == SOCKET_ERROR) {
-				if (WSAGetLastError() != WSA_IO_PENDING) {
-					err_display("WSARecv()");
-				}
+			if (recieve(ptr, retval)) {
 				continue;
 			}
 		}
 	}
 
 	return 0;
+}
+
+//전송
+bool send(SOCKETINFO* ptr, int retval) {
+	ZeroMemory(&ptr->overlapped, sizeof(ptr->overlapped));
+	ptr->wsabuf.buf = ptr->buf + ptr->sendbytes;
+	ptr->wsabuf.len = ptr->recvbytes - ptr->sendbytes;
+
+	//printf("send: %s %d\n", ptr->wsabuf.buf, ptr->wsabuf.len);
+
+	DWORD sendbytes;
+	retval = WSASend(ptr->sock, &ptr->wsabuf, 1,
+		&sendbytes, 0, &ptr->overlapped, NULL);
+	if (retval == SOCKET_ERROR) {
+		if (WSAGetLastError() != WSA_IO_PENDING) {
+			err_display("WSASend()");
+		}
+		return true;
+	}
+	return false;
+}
+
+//받기
+bool recieve(SOCKETINFO* ptr, int retval) {
+	ZeroMemory(&ptr->overlapped, sizeof(ptr->overlapped));
+	ptr->wsabuf.buf = ptr->buf;
+	ptr->wsabuf.len = BUFSIZE;
+
+	//printf("recieve: %s %d\n", ptr->wsabuf.buf, ptr->wsabuf.len);
+
+	DWORD recvbytes;
+	DWORD flags = 0;
+	retval = WSARecv(ptr->sock, &ptr->wsabuf, 1,
+		&recvbytes, &flags, &ptr->overlapped, NULL);
+	if (retval == SOCKET_ERROR) {
+		if (WSAGetLastError() != WSA_IO_PENDING) {
+			err_display("WSARecv()");
+		}
+		return true;
+	}
+	return false;
 }
 
 // 소켓 함수 오류 출력 후 종료
