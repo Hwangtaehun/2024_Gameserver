@@ -15,9 +15,9 @@ DWORD WINAPI ThreadProc( LPVOID lpParam )
 
 	DWORD numOne = *nPtr;
 
-	for(DWORD i=numOne; i<= numOne + 3; i++)
+	for(int i = 0; i <= 3; i++)
 	{
-		total += i;
+		total += * (nPtr + i);
 	}
 
     return 0; // 정상적 종료.
@@ -30,10 +30,9 @@ int _tmain(int argc, TCHAR* argv[])
     HANDLE hThread[3];
 	DWORD paramThread[12];
 
-	for (int i = 0; i < 11; i++) {
-		scanf("%d ", &paramThread[i]);
+	for (int i = 0; i < 12; i++) {
+		scanf("%d", &paramThread[i]);
 	}
-	scanf("%d", &paramThread[11]);
 
     hThread[0] = 
 		CreateThread ( 
