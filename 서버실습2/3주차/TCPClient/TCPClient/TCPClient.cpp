@@ -59,6 +59,7 @@ int recvn(SOCKET s, char *buf, int len, int flags)
 
 int main(int argc, char *argv[])
 {
+    bool first = true;//처음 접속
     int retval;
     char msg[9];
 
@@ -86,20 +87,30 @@ int main(int argc, char *argv[])
     char buf[BUFSIZE + 1];
     int len;
 
-    //추가
-    sprintf(buf, "connect");
-    retval = send(sock, buf, strlen(buf), 0);
-    if (retval == SOCKET_ERROR) {
-        sprintf_s(msg, "send");
-        err_display(msg);
-        return 0;
-    }
-    retval = recvn(sock, buf, 38, 0);
-    buf[retval] = '\0';
-    printf("%s", buf);
-
     // 서버와 데이터 통신
     while (1) {
+        if (first) 
+        {
+            sprintf(buf, "connect");
+            retval = send(sock, buf, strlen(buf), 0);
+            if (retval == SOCKET_ERROR) {
+                sprintf_s(msg, "send");
+                err_display(msg);
+                return 0;
+            }
+            int temp = retval;
+            //retval = recvn(sock, buf, retval, 0);
+            retval = recvn(sock, buf, 38, 0);
+            if (retval == SOCKET_ERROR) {
+                sprintf_s(msg, "recv");
+                err_display(msg);
+                break;
+            }
+            buf[retval] = '\0';
+            printf("%s", buf);
+            first = false;
+        }
+
         // 데이터 입력
         printf("\n[보낼 데이터] ");
         if (fgets(buf, BUFSIZE + 1, stdin) == NULL)

@@ -7,7 +7,8 @@
 #define SERVERPORT 9000
 #define BUFSIZE    512
 
-bool first = true;
+bool first;
+char con_msg[36];
 
 // 소켓 정보 저장을 위한 구조체
 struct SOCKETINFO
@@ -88,7 +89,6 @@ int main(int argc, char* argv[])
 
 		//추가
 		time_t timer;
-		char con_msg[36];
 		timer = time(NULL);
 		struct tm* t;
 		t = localtime(&timer);
@@ -107,6 +107,8 @@ int main(int argc, char* argv[])
 		ptr->wsabuf.buf = ptr->buf;
 		ptr->wsabuf.len = BUFSIZE;
 
+		first = true;
+
 		// 비동기 입출력 시작
 		flags = 0;
 		retval = WSARecv(client_sock, &ptr->wsabuf, 1, &recvbytes,
@@ -117,21 +119,6 @@ int main(int argc, char* argv[])
 			}
 			continue;
 		}
-
-		//추가
-		ptr->buf[ptr->recvbytes] = '\0';
-		ptr->wsabuf.buf = con_msg;
-		ptr->wsabuf.len = BUFSIZE;
-		retval = WSASend(ptr->sock, &ptr->wsabuf, 1,&recvbytes,
-			0, &ptr->overlapped, NULL);
-		if (retval == SOCKET_ERROR) {
-			if (WSAGetLastError() != ERROR_IO_PENDING) {
-				err_display("WSASend()");
-				printf("WSASEND()\n");
-			}
-			continue;
-		}
-		first = false;
 	}
 
 	// 윈속 종료
@@ -152,10 +139,6 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 		SOCKETINFO* ptr;
 		retval = GetQueuedCompletionStatus(hcp, &cbTransferred,
 			(LPDWORD)&client_sock, (LPOVERLAPPED*)&ptr, INFINITE);
-
-		if (first) {
-			continue;
-		}
 
 		// 클라이언트 정보 얻기
 		SOCKADDR_IN clientaddr;
@@ -183,8 +166,10 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 			ptr->sendbytes = 0;
 
 			ptr->buf[ptr->recvbytes] = '\0';
-			printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
-				ntohs(clientaddr.sin_port), ptr->buf);
+			if (!first) {
+				printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
+					ntohs(clientaddr.sin_port), ptr->buf);
+			}
 		}
 		else {
 			ptr->sendbytes += cbTransferred;
@@ -192,8 +177,28 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 
 		if (ptr->recvbytes > ptr->sendbytes) {
 			// 데이터 보내기
-			if (send(ptr, retval)) {
-				continue;
+			if (!first) {
+				if (send(ptr, retval)) {
+					continue;
+				}
+			}
+			else {
+				DWORD sendbytes;
+				ptr->buf[ptr->recvbytes] = '\0';
+				ptr->wsabuf.buf = con_msg;
+				ptr->wsabuf.len = BUFSIZE;
+				retval = WSASend(ptr->sock, &ptr->wsabuf, 1, &sendbytes,
+					0, &ptr->overlapped, NULL);
+				//printf("send: %s %d\n", ptr->wsabuf.buf, ptr->wsabuf.len);
+				if (retval == SOCKET_ERROR) {
+					if (WSAGetLastError() != ERROR_IO_PENDING) {
+						err_display("WSASend()");
+						printf("WSASEND()\n");
+					}
+					continue;
+				}
+
+				first = false;
 			}
 		}
 		else {
@@ -215,7 +220,8 @@ bool send(SOCKETINFO* ptr, int retval) {
 	ptr->wsabuf.buf = ptr->buf + ptr->sendbytes;
 	ptr->wsabuf.len = ptr->recvbytes - ptr->sendbytes;
 
-	//printf("send: %s %d\n", ptr->wsabuf.buf, ptr->wsabuf.len);
+	/*printf("send: %s %d\n", ptr->wsabuf.buf, ptr->wsabuf.len);
+	printf("rbyte: %d, sbyte: %d\n", ptr->recvbytes, ptr->sendbytes);*/
 
 	DWORD sendbytes;
 	retval = WSASend(ptr->sock, &ptr->wsabuf, 1,
@@ -235,7 +241,8 @@ bool recieve(SOCKETINFO* ptr, int retval) {
 	ptr->wsabuf.buf = ptr->buf;
 	ptr->wsabuf.len = BUFSIZE;
 
-	//printf("recieve: %s %d\n", ptr->wsabuf.buf, ptr->wsabuf.len);
+	/*printf("recieve: %s %d\n", ptr->wsabuf.buf, ptr->wsabuf.len);
+	printf("rbyte: %d, sbyte: %d\n", ptr->recvbytes, ptr->sendbytes);*/
 
 	DWORD recvbytes;
 	DWORD flags = 0;
