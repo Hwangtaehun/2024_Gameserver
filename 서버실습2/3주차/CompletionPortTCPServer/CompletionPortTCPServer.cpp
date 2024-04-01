@@ -180,30 +180,13 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 			if (first) {
 				sprintf(ptr->buf, con_msg);
 				ptr->recvbytes = strlen(con_msg);
-				printf("%s %d\n", ptr->buf, ptr->recvbytes);
+				/*printf("%s %d\n", ptr->buf, ptr->recvbytes);*/
 				first = false;
 			}
+
 			if (send(ptr, retval)) {
 				continue;
 			}
-			/*else {
-				DWORD sendbytes;
-				ptr->buf[ptr->recvbytes] = '\0';
-				ptr->wsabuf.buf = con_msg;
-				ptr->wsabuf.len = BUFSIZE;
-				retval = WSASend(ptr->sock, &ptr->wsabuf, 1, &sendbytes,
-					0, &ptr->overlapped, NULL);
-				printf("send: %s %d buf = %s\n", ptr->wsabuf.buf, ptr->wsabuf.len, ptr->buf);
-				if (retval == SOCKET_ERROR) {
-					if (WSAGetLastError() != ERROR_IO_PENDING) {
-						err_display("WSASend()");
-						printf("WSASEND()\n");
-					}
-					continue;
-				}
-
-				first = false;
-			}*/
 		}
 		else {
 			ptr->recvbytes = 0;
