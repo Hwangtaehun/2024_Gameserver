@@ -586,7 +586,7 @@ void CSjTetris1Dlg::DrawScr2()
 void CSjTetris1Dlg::OnClickedDisconnectBt()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	if (AfxMessageBox(_T("Sever와의 연결을 끊을까유 !!"), MB_YESNO) == IDYES)
+	if (AfxMessageBox(_T("Sever와의 연결을 해제할까요!!"), MB_YESNO) == IDYES)
 	{
 		m_ctrlConnectBt.EnableWindow(TRUE);
 		m_ctrlConnectBt.SetWindowText(_T("Server연결"));
@@ -611,7 +611,7 @@ void CSjTetris1Dlg::OnClickedConnectBt()
 	m_Client.SetMainWindow(this);
 	if (!m_Client.Connect(m_strIpAddress, m_nPortNo))
 	{
-		MessageBox(_T("Sever에 접속하지 못했네유 !!"));
+		MessageBox(_T("Sever에 접속하지 실패했습니다. !!"));
 		m_Client.Close();
 		return;
 	}

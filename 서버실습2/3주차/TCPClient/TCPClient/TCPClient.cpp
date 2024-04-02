@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
             }
             int temp = retval;
             //retval = recvn(sock, buf, retval, 0);
-            retval = recvn(sock, buf, 35, 0);
+            retval = recvn(sock, buf, 36, 0);
             if (retval == SOCKET_ERROR) {
                 sprintf_s(msg, "recv");
                 err_display(msg);
