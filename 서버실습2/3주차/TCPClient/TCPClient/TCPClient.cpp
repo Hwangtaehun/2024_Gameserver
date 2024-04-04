@@ -98,9 +98,8 @@ int main(int argc, char *argv[])
                 err_display(msg);
                 return 0;
             }
-            int temp = retval;
             //retval = recvn(sock, buf, retval, 0);
-            retval = recvn(sock, buf, 36, 0);
+            retval = recv(sock, buf, BUFSIZE, 0);
             if (retval == SOCKET_ERROR) {
                 sprintf_s(msg, "recv");
                 err_display(msg);

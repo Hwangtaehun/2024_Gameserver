@@ -3,11 +3,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <malloc.h>
 
 #define SERVERPORT 9000
 #define BUFSIZE    512
 
 bool first;
+int index = 0;
+int *sock_arr;
 char con_msg[36];
 
 // 소켓 정보 저장을 위한 구조체
@@ -28,6 +31,7 @@ void err_quit(char* msg);
 void err_display(char* msg);
 bool send(SOCKETINFO* ptr, int retval);
 bool recieve(SOCKETINFO* ptr, int retval);
+void print();
 
 int main(int argc, char* argv[])
 {
@@ -87,7 +91,7 @@ int main(int argc, char* argv[])
 		printf("[TCP 서버] 클라이언트 접속: IP 주소=%s, 포트 번호=%d\n",
 			inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
 
-		//추가
+		//접속시간 확인
 		time_t timer;
 		timer = time(NULL);
 		struct tm* t;
@@ -107,6 +111,29 @@ int main(int argc, char* argv[])
 		ptr->wsabuf.buf = ptr->buf;
 		ptr->wsabuf.len = BUFSIZE;
 
+		//클라이언트 소켓 정리
+		if (index == 0) {
+			sock_arr = new int[index + 1];
+			sock_arr[index] = ptr->sock;
+		}
+		else {
+			int* temp = new int[index];
+			for (int i = 0; i < index; i++) {
+				temp[i] = sock_arr[i];
+			}
+			delete[] sock_arr;
+
+			sock_arr = new int[index + 1];
+			for (int i = 0; i < index; i++) {
+				sock_arr[i] = temp[i];
+			}
+			sock_arr[index] = ptr->sock;
+			delete[] temp;
+		}
+		index++;
+		print();
+		//끝
+
 		first = true;
 
 		// 비동기 입출력 시작
@@ -123,6 +150,7 @@ int main(int argc, char* argv[])
 
 	// 윈속 종료
 	WSACleanup();
+	delete[] sock_arr;
 	return 0;
 }
 
@@ -156,6 +184,29 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 			closesocket(ptr->sock);
 			printf("[TCP 서버] 클라이언트 종료: IP 주소=%s, 포트 번호=%d\n",
 				inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
+			
+			//추가
+			int* temp = new int[index - 1];
+			int t_idx = 0;
+
+			for (int i = 0; i < index; i++) {
+				if (sock_arr[i] != ptr->sock) {
+					temp[t_idx] = sock_arr[i];
+					t_idx++;
+				}
+			}
+			delete[] sock_arr;
+			index--;
+
+			sock_arr = new int[index];
+			for (int i = 0; i < index; i++) {
+				sock_arr[i] = temp[i];
+			}
+			delete[] temp;
+
+			print();
+			//끝
+
 			delete ptr;
 			continue;
 		}
@@ -176,15 +227,25 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 		}
 
 		if (ptr->recvbytes > ptr->sendbytes) {
-			// 데이터 보내기
+			//시간입출력확인
 			if (first) {
 				sprintf(ptr->buf, con_msg);
 				ptr->recvbytes = strlen(con_msg);
-				/*printf("%s %d\n", ptr->buf, ptr->recvbytes);*/
 				first = false;
 			}
 
-			if (send(ptr, retval)) {
+			// 데이터 보내기
+			ZeroMemory(&ptr->overlapped, sizeof(ptr->overlapped));
+			ptr->wsabuf.buf = ptr->buf + ptr->sendbytes;
+			ptr->wsabuf.len = ptr->recvbytes - ptr->sendbytes;
+
+			DWORD sendbytes;
+			retval = WSASend(ptr->sock, &ptr->wsabuf, 1,
+				&sendbytes, 0, &ptr->overlapped, NULL);
+			if (retval == SOCKET_ERROR) {
+				if (WSAGetLastError() != WSA_IO_PENDING) {
+					err_display("WSASend()");
+				}
 				continue;
 			}
 		}
@@ -192,7 +253,18 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 			ptr->recvbytes = 0;
 
 			// 데이터 받기
-			if (recieve(ptr, retval)) {
+			ZeroMemory(&ptr->overlapped, sizeof(ptr->overlapped));
+			ptr->wsabuf.buf = ptr->buf;
+			ptr->wsabuf.len = BUFSIZE;
+
+			DWORD recvbytes;
+			DWORD flags = 0;
+			retval = WSARecv(ptr->sock, &ptr->wsabuf, 1,
+				&recvbytes, &flags, &ptr->overlapped, NULL);
+			if (retval == SOCKET_ERROR) {
+				if (WSAGetLastError() != WSA_IO_PENDING) {
+					err_display("WSARecv()");
+				}
 				continue;
 			}
 		}
@@ -242,6 +314,14 @@ bool recieve(SOCKETINFO* ptr, int retval) {
 		return true;
 	}
 	return false;
+}
+
+//출력
+void print() {
+	for (int i = 0; i < index; i++) {
+		printf("sock_arr[%d] = %d\t", i, sock_arr[i]);
+	}
+	printf("\n");
 }
 
 // 소켓 함수 오류 출력 후 종료
