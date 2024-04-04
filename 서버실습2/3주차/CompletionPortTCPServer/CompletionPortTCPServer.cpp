@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
 			delete[] temp;
 		}
 		index++;
-		print();
+		//print();
 		//³¡
 
 		first = true;
@@ -204,7 +204,7 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 			}
 			delete[] temp;
 
-			print();
+			//print();
 			//³¡
 
 			delete ptr;

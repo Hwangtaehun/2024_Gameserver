@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
         printf("[TCP 클라이언트] %d바이트를 보냈습니다.\n", retval);
 
         // 데이터 받기
-        retval = recvn(sock, buf, retval, 0);
+        retval = recv(sock, buf, BUFSIZE, 0);
         if (retval == SOCKET_ERROR) {
             sprintf_s(msg, "recv");
             err_display(msg);
