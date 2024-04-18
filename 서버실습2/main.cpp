@@ -9,9 +9,9 @@ int main()
 	MYSQL_ROW row;
 
 	char* server = "localhost";
-	char* user = "mysejong";
-	char* password = "sj4321";
-	char* database = "librarydb";
+	char* user = "root";
+	char* password = "";
+	char* database = "test";
 
 
 	conn = mysql_init(NULL);
@@ -31,7 +31,7 @@ int main()
 		printf("%s \n", row[0]);
 
 
-	if (mysql_query(conn, "SELECT * FROM member"))
+	if (mysql_query(conn, "SELECT * FROM R_TEST"))
 	{
 		return 1;
 	}
