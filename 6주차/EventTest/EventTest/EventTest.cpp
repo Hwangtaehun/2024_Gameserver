@@ -3,6 +3,9 @@
 #include "iostream"
 using namespace std;
 
+int data[12];
+int total = 0;
+int index = 0;
 
 DWORD WINAPI ThreadProc(LPVOID pParam)
 {
@@ -15,31 +18,34 @@ DWORD WINAPI ThreadProc(LPVOID pParam)
 		return 0;
 	}
 
-	SYSTEMTIME st;
-	GetLocalTime(&st);
-
-	cout << "..." << "SubThread " << GetCurrentThreadId() << " => ";
-	cout << st.wYear << '/' << st.wMonth << '/' << st.wDay << ' ';
-	cout << st.wHour << ':' << st.wMinute << ':' << st.wSecond << '+';
-	cout << st.wMilliseconds << endl;
+	for (int i = index; i < index + 4; i++) {
+		total += ::data[i];
+	}
+	index += 4;
+	
 	SetEvent(hEvent);
-
 	return 0;
 }
 
 void _tmain(void)
 {
-	cout << "======= Start Event Test ========" << endl;
+	const int SIZE = 3;
+	for (int i = 0; i < 12; i++) {
+		cin >> ::data[i];
+	}
 	HANDLE hEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
 
-	HANDLE arhThreads[10];
-	for (int i = 0; i < 10; i++)
+	HANDLE arhThreads[SIZE];
+	for (int i = 0; i < SIZE; i++)
 	{
 		DWORD dwTheaID = 0;
 		arhThreads[i] = CreateThread(NULL, 0, ThreadProc, hEvent, 0, &dwTheaID);
 	}
-	WaitForMultipleObjects(10, arhThreads, TRUE, INFINITE);
+	WaitForMultipleObjects(SIZE, arhThreads, TRUE, INFINITE);
 	CloseHandle(hEvent);
-	cout << "======= End Event Test ==========" << endl;
+	for (int i = 0; i < SIZE; i++) {
+		CloseHandle(arhThreads[i]);
+	}
+	cout << "รัวี: " << total << endl;
 }
 
