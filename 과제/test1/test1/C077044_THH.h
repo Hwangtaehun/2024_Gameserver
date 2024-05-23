@@ -19,23 +19,22 @@ private:
 	short type;
 	short endmark = 0xFF;
 	char data[DATASIZE + 1];
-	char m_size[2] = {};
-	char m_type[2] = {};
-	char m_end[2] = {};
-
-	void separate(char* ip, char* x, char* y, char* z);
-	void makeBuf();
-	int input(char* m_value, int i, int len);
-public:
 	char buf[DATASIZE + 1];
+	unsigned char m_size[2] = {};
+	unsigned char m_type[2] = {};
+	unsigned char m_end[2] = {};
 
+	void Separate(char* ip, char* x, char* y, char* z);
+	int Input(char* m_value, int i, int len);
+public:
 	Packet();
 	Packet(char* buf);
 	~Packet();
-	void setConnect(char* ip);
-	void sendAllConnect(char* ip);
-	void setMove(char* ip, float x, float y, float z);
-	void sendAllMove(char* mes);
-	void getData();
+	void SetConnect(char* ip);
+	void SendAllConnect(char* ip);
+	void SetMove(char* ip, float x, float y, float z);
+	void SendAllMove(char* mes);
+	void GetData();
+	char* GetBuf();
 	void Print();
 };

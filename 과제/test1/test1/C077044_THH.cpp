@@ -28,20 +28,19 @@ Packet::Packet(char* buf)
 			data[i - 4] = '\0';
 		}
 	}
-	for (int i = len - 1; i < len + 1; i++) {
+	for (int i = len - 2; i < len; i++) {
 		m_end[j] = buf[i];
 		j++;
 	}
-	
 
-	size = (static_cast<unsigned char>(m_size[1]) << 8) | static_cast<unsigned char>(m_size[0]);
-	type = (static_cast<unsigned char>(m_type[1]) << 8) | static_cast<unsigned char>(m_type[0]);
-	endmark = (static_cast<unsigned char>(m_end[1]) << 8) | static_cast<unsigned char>(m_end[0]);
+	size = short(m_size[1]);
+	type = short(m_type[1]);
+	endmark = short(m_end[1]);
 }
 
 Packet::~Packet(){}
 
-void Packet::separate(char* ip, char* x, char* y, char* z)
+void Packet::Separate(char* ip, char* x, char* y, char* z)
 {
 	int len = 0, i = 0, cnt = 0;
 
@@ -74,19 +73,7 @@ void Packet::separate(char* ip, char* x, char* y, char* z)
 	}
 }
 
-void Packet::makeBuf()
-{
-	m_size[0] = size & 0xFF;
-	m_size[1] = (size >> 8) & 0xFF;
-	m_type[0] = type & 0xFF;
-	m_type[1] = (type >> 8) & 0xFF;
-	m_end[0] = endmark & 0xFF;
-	m_end[1] = (endmark >> 8) & 0xFF;
-	printf("m_end¿« ≈©±‚: %d\n", strlen(m_end));
-	sprintf_s(buf, "%2s%2s%s%2s\0", m_size, m_type, data, m_end);
-}
-
-int Packet::input(char* m_value, int i, int len)
+int Packet::Input(char* m_value, int i, int len)
 {
 	int j = 0;
 
@@ -109,39 +96,35 @@ int Packet::input(char* m_value, int i, int len)
 	return i;
 }
 
-void Packet::setConnect(char* ip)
+void Packet::SetConnect(char* ip)
 {
 	type = 0;
 	sprintf_s(data, "%s\0", ip);
 	size = (short)strlen(data) + 6;
-	makeBuf();
 }
 
-void Packet::sendAllConnect(char* ip)
+void Packet::SendAllConnect(char* ip)
 {
 	type = 1;
 	sprintf_s(data, "%s\0", ip);
 	size = (short)strlen(data) + 6;
-	makeBuf();
 }
 
-void Packet::setMove(char* ip, float x, float y, float z)
+void Packet::SetMove(char* ip, float x, float y, float z)
 {
 	type = 2;
 	sprintf_s(data, "%s,%f,%f,%f\0", ip, x, y, z);
 	size = (short)strlen(data) + 6;
-	makeBuf();
 }
 
-void Packet::sendAllMove(char* mes)
+void Packet::SendAllMove(char* mes)
 {
 	type = 3;
 	sprintf_s(data, mes);
 	size = (short)strlen(data) + 6;
-	makeBuf();
 }
 
-void Packet::getData()
+void Packet::GetData()
 {
 	switch (type)
 	{
@@ -154,12 +137,47 @@ void Packet::getData()
 	case req_move:
 	case ack_move:
 		char ip[16], x[16], y[16], z[16];
-		separate(ip, x, y, z);
+		Separate(ip, x, y, z);
 		printf("%s, request to move %s, %s, %s", ip, x, y, z);
 		break;
 	case -1:
 		printf("error");
 	}
+}
+
+char* Packet::GetBuf()
+{
+	int j = 0;
+
+	m_size[0] = ' ';
+	m_size[1] = (char)size;
+	m_type[0] = ' ';
+	m_type[1] = (char)type;
+	m_end[0] = ' ';
+	m_end[1] = (char)endmark;
+
+	short x, y, z;
+	x = (short)m_size[1];
+	y = (short)m_type[1];
+	z = (short)m_end[1];
+
+	for (int i = 0; i < 2; i++) {
+		buf[i] = m_size[i];
+	}
+	for (int i = 2; i < 4; i++) {
+		buf[i] = m_type[i - 2];
+	}
+	for (int i = 4; i < size - 2; i++) {
+		buf[i] = data[i - 4];
+	}
+	for (int i = size - 2; i < size; i++) {
+		buf[i] = m_end[j];
+		j++;
+	}
+
+	buf[size] = '\0';
+
+	return buf;
 }
 
 void Packet::Print()

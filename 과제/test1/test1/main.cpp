@@ -1,14 +1,17 @@
 #include "C077044_THH.h"
 
 int main() {
+	char buf[DATASIZE];
 	int type = 0;
 	Packet pc = Packet();
-
+	
 	pc.setMove("127.0.0.1", 100.0f, 100.0f, 100.0f);
-	printf("%s, %d", pc.buf, strlen(pc.buf));
+	pc.Print();
+	sprintf_s(buf, "%s", pc.getBuf());
 
-	Packet m_pc = Packet(pc.buf);
-	m_pc.Print();
+	Packet opc = Packet(buf);
+	opc.Print();
+	opc.getData();
 
 	return 0;
 }
