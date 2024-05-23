@@ -56,16 +56,16 @@ void Packet::Separate(char* ip, char* x, char* y, char* z)
 		switch (cnt)
 		{
 		case 0:
-			i = input(ip, i, len);
+			i = Input(ip, i, len);
 			break;
 		case 1:
-			i = input(x, i, len);
+			i = Input(x, i, len);
 			break;
 		case 2:
-			i = input(y, i, len);
+			i = Input(y, i, len);
 			break;
 		case 3:
-			i = input(z, i, len);
+			i = Input(z, i, len);
 			break;
 		}
 
