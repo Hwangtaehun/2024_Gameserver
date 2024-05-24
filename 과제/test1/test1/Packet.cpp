@@ -4,19 +4,23 @@ Packet::Packet()
 {
 	size = 0;
 	type = -1;
-	data[0] = '\0';
-	buf[0] = '\0';
+	endmark = 0xFF;
+	m_x = 0.0f;
+	m_y = 0.0f;
+	m_z = 0.0f;
 }
 
 Packet::Packet(char* str)
 {
-	int j = 0;
-	int len = strlen(str);
-
 	size = 0;
 	type = -1;
-	data[0] = '\0';
-	buf[0] = '\0';
+	endmark = 0xFF;
+	m_x = 0.0f;
+	m_y = 0.0f;
+	m_z = 0.0f;
+
+	int j = 0;
+	int len = strlen(str);
 
 	for (int i = 0; i < 2; i++) {
 		m_size[i] = str[i];
@@ -129,7 +133,7 @@ void Packet::SendAllMove(char* mes)
 
 void Packet::GetData()
 {
-	string sx, sy, sz;
+	
 
 	switch (type)
 	{
@@ -143,14 +147,21 @@ void Packet::GetData()
 	case ack_move:
 		char ip[16], x[16], y[16], z[16];
 		Separate(ip, x, y, z);
-		sx = x;
-		sy = y;
-		sz = z;
-		printf("%s, request to move %.2f, %.2f, %.2f", ip, stof(x), stof(y), stof(z));
+		m_x = stof(x);
+		m_y = stof(y);
+		m_z = stof(z);
+		printf("%s, request to move %.2f, %.2f, %.2f", ip, m_x, m_y, m_z);
 		break;
 	case -1:
 		printf("error");
 	}
+}
+
+void Packet::GetTrans(float* x, float* y, float* z)
+{
+	*x = m_x;
+	*y = m_y;
+	*z = m_z;
 }
 
 char* Packet::GetBuf()
