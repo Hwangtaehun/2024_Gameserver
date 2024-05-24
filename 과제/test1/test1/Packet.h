@@ -1,8 +1,9 @@
 #pragma once
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#define DATASIZE 512
+#include <string>
+#define BUFSIZE 512
+#define DATASIZE 506
 
 using namespace std;
 

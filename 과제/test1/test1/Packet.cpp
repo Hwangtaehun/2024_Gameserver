@@ -5,33 +5,36 @@ Packet::Packet()
 	size = 0;
 	type = -1;
 	data[0] = '\0';
+	buf[0] = '\0';
 }
 
-Packet::Packet(char* buf)
+Packet::Packet(char* str)
 {
 	int j = 0;
-	int len = strlen(buf);
+	int len = strlen(str);
 
 	size = 0;
 	type = -1;
 	data[0] = '\0';
+	buf[0] = '\0';
 
 	for (int i = 0; i < 2; i++) {
-		m_size[i] = buf[i];
+		m_size[i] = str[i];
 	}
 	for (int i = 2; i < 4; i++) {
-		m_type[i - 2] = buf[i];
+		m_type[i - 2] = str[i];
 	}
 	for (int i = 4; i < len - 1; i++) {
-		data[i - 4] = buf[i];
+		data[i - 4] = str[i];
 		if (len - 2 == i) {
 			data[i - 4] = '\0';
 		}
 	}
 	for (int i = len - 2; i < len; i++) {
-		m_end[j] = buf[i];
+		m_end[j] = str[i];
 		j++;
 	}
+
 
 	size = short(m_size[1]);
 	type = short(m_type[1]);
@@ -113,7 +116,7 @@ void Packet::SendAllConnect(char* ip)
 void Packet::SetMove(char* ip, float x, float y, float z)
 {
 	type = 2;
-	sprintf_s(data, "%s,%f,%f,%f\0", ip, x, y, z);
+	sprintf_s(data, "%s,%.2f,%.2f,%.2f\0", ip, x, y, z);
 	size = (short)strlen(data) + 6;
 }
 
@@ -126,6 +129,8 @@ void Packet::SendAllMove(char* mes)
 
 void Packet::GetData()
 {
+	string sx, sy, sz;
+
 	switch (type)
 	{
 	case req_con:
@@ -138,7 +143,10 @@ void Packet::GetData()
 	case ack_move:
 		char ip[16], x[16], y[16], z[16];
 		Separate(ip, x, y, z);
-		printf("%s, request to move %s, %s, %s", ip, x, y, z);
+		sx = x;
+		sy = y;
+		sz = z;
+		printf("%s, request to move %.2f, %.2f, %.2f", ip, stof(x), stof(y), stof(z));
 		break;
 	case -1:
 		printf("error");
@@ -155,11 +163,6 @@ char* Packet::GetBuf()
 	m_type[1] = (char)type;
 	m_end[0] = ' ';
 	m_end[1] = (char)endmark;
-
-	short x, y, z;
-	x = (short)m_size[1];
-	y = (short)m_type[1];
-	z = (short)m_end[1];
 
 	for (int i = 0; i < 2; i++) {
 		buf[i] = m_size[i];
