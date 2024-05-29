@@ -28,6 +28,47 @@ void Client::Fceconnet()
     if (retval == SOCKET_ERROR) Err_quit("connect()");
 }
 
+void Client::Frun()
+{
+    // 서버와 데이터 통신
+    while (1) {
+        // 데이터 입력
+        printf("\n[보낼 데이터] ");
+        if (fgets(buf, BUFSIZE + 1, stdin) == NULL)
+            break;
+
+        // '\n' 문자 제거
+        len = strlen(buf);
+        if (buf[len - 1] == '\n')
+            buf[len - 1] = '\0';//null 문자까지 처리
+        if (strlen(buf) == 0)
+            break;
+
+        // 데이터 보내기
+        retval = send(sock, buf, strlen(buf), 0);
+        if (retval == SOCKET_ERROR) {
+            Err_display("send()");
+            break;
+        }
+        printf("[TCP 클라이언트] %d바이트를 보냈습니다.\n", retval);
+
+        // 데이터 받기
+        retval = recv(sock, buf, BUFSIZE, 0);
+        if (retval == SOCKET_ERROR) {
+            Err_display("recv()");
+            break;
+        }
+        else if (retval == 0)
+            break;
+
+        // 받은 데이터 출력
+        buf[retval] = '\0';
+        printf("[TCP 클라이언트] %d바이트를 받았습니다.\n", retval);
+        printf("[받은 데이터] %s\n", buf);
+    }
+
+}
+
 bool Client::Fsend()
 {
     // 데이터 입력

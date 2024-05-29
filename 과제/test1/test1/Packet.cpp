@@ -105,28 +105,28 @@ int Packet::Input(char* m_value, int i, int len)
 
 void Packet::SetConnect(char* ip)
 {
-	type = 0;
+	type = req_con;
 	sprintf_s(data, "%s\0", ip);
 	size = (short)strlen(data) + 6;
 }
 
 void Packet::SendAllConnect(char* ip)
 {
-	type = 1;
+	type = ack_con;
 	sprintf_s(data, "%s\0", ip);
 	size = (short)strlen(data) + 6;
 }
 
 void Packet::SetMove(char* ip, float x, float y, float z)
 {
-	type = 2;
+	type = req_move;
 	sprintf_s(data, "%s,%.2f,%.2f,%.2f\0", ip, x, y, z);
 	size = (short)strlen(data) + 6;
 }
 
 void Packet::SendAllMove(char* mes)
 {
-	type = 3;
+	type = ack_move;
 	sprintf_s(data, mes);
 	size = (short)strlen(data) + 6;
 }

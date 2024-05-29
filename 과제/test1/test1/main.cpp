@@ -7,7 +7,7 @@ int main() {
 	Packet pc = Packet();
 	
 	//pc.SetMove("127.0.0.1", 100.0f, 100.0f, 100.0f);
-	pc.SendAllConnect("寰喟ж撮蹂六六六六");
+	pc.SetConnect("127.0.0.1");
 	pc.Print();
 	sprintf_s(buf, "%s", pc.GetBuf());
 	pc.~Packet();

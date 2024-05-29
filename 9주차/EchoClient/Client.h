@@ -17,6 +17,7 @@ public:
     ~Client();
     void Fsocket();
     void Fceconnet();
+    void Frun();
     bool Fsend();
     bool Frecv();
 

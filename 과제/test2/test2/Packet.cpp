@@ -48,21 +48,21 @@ void Packet::trans(char* str)
 
 void Packet::SendMsg(char* msg)
 {
-	type = 0;
+	type = PK_DATA;
 	sprintf_s(data, "%s\0", msg);
 	size = (short)(strlen(data) + 6);
 }
 
-void Packet::GetData()
+char* Packet::GetData()
 {
 	switch (type)
 	{
 	case PK_DATA:
-		printf("%s\n", data);
+		return data;
 		break;
 	case -1:
 	default:
-		printf("error");
+		return "error";
 	}
 }
 
@@ -92,7 +92,6 @@ char* Packet::GetBuf()
 	}
 	
 	buf[size] = '\0';
-	printf("buf = %s\n", buf);
 	return buf;
 }
 

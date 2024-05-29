@@ -10,17 +10,7 @@ int main(int argc, char* argv[])
     Client client = Client(wsa);
     client.Fsocket();
     client.Fceconnet();
-
-    // 서버와 데이터 통신
-    while (1) {
-        if (client.Fsend()) {
-            break;
-        }
-
-        if (client.Frecv()) {
-            break;
-        }
-    }
+    client.Frun();
 
     // closesocket()
     client.~Client();

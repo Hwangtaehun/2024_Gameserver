@@ -28,7 +28,7 @@ public:
 	Packet(char* buf);
 	~Packet();
 	void SendMsg(char* msg);
-	void GetData();
+	char* GetData();
 	char* GetBuf();
 	void SetBuf(char* str);
 	void Print();
