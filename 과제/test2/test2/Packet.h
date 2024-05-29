@@ -8,10 +8,7 @@
 using namespace std;
 
 enum Type {
-	req_con = 1,
-	ack_con,
-	req_move,
-	ack_move
+	PK_DATA = 1
 };
 
 class Packet {
@@ -19,27 +16,20 @@ private:
 	short size;
 	short type;
 	short endmark;
-	float m_x; 
-	float m_y;
-	float m_z;
 	char buf[BUFSIZE + 1] = {};
 	char data[DATASIZE + 1] = {};
 	unsigned char m_size[2] = {};
 	unsigned char m_type[2] = {};
 	unsigned char m_end[2] = {};
 
-	void Separate(char* ip, char* x, char* y, char* z);
-	int Input(char* m_value, int i, int len);
+	void trans(char* str);
 public:
 	Packet();
 	Packet(char* buf);
 	~Packet();
-	void SetConnect(char* ip);
-	void SendAllConnect(char* ip);
-	void SetMove(char* ip, float x, float y, float z);
-	void SendAllMove(char* mes);
+	void SendMsg(char* msg);
 	void GetData();
-	void GetTrans(float* x, float* y, float* z);
 	char* GetBuf();
+	void SetBuf(char* str);
 	void Print();
 };

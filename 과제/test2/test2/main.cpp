@@ -1,13 +1,10 @@
 #include "Packet.h"
 
 int main() {
-	//float x, y, z;
 	char buf[DATASIZE];
-	//int type = 0;
 	Packet pc = Packet();
 	
-	//pc.SetMove("127.0.0.1", 100.0f, 100.0f, 100.0f);
-	pc.SendAllConnect("안녕하세요ㅋㅋㅋㅋ");
+	pc.SendMsg("안녕하세요.그러면안녕히게세요.ㅋㅋㅋㅋㅋ");
 	pc.Print();
 	sprintf_s(buf, "%s", pc.GetBuf());
 	pc.~Packet();
@@ -15,9 +12,7 @@ int main() {
 	Packet opc = Packet(buf);
 	opc.Print();
 	opc.GetData();
-	//opc.GetTrans(&x, &y, &z);
 	opc.~Packet();
-	//printf("\nx = %.2f, y = %.2f, z =%.2f\n", x, y, z);
 
 	return 0;
 }
