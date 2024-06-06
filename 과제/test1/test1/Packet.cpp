@@ -94,14 +94,12 @@ void Packet::SendAllMove()
 	size = (short)strlen(data) + 6;
 }
 
-char* Packet::GetData()
+void Packet::GetData(char* temp)
 {
-	char temp[BUFSIZE] = {};
-
 	switch (type)
 	{
 	case req_con:
-		sprintf(temp,"%s, connection success", data);
+		sprintf(temp, "%s, connection success", data);
 		break;
 	case ack_con:
 		sprintf(temp, "%s, connection completed", data);
@@ -113,23 +111,13 @@ char* Packet::GetData()
 		m_x = stof(x);
 		m_y = stof(y);
 		m_z = stof(z);
-		printf("함수: %s, request to move %.2f, %.2f, %.2f\n", ip, m_x, m_y, m_z);
 		sprintf(temp, "%s, request to move %.2f, %.2f, %.2f", ip, m_x, m_y, m_z);
 		break;
 	case chat_string:
-		memcpy(temp, data, size);
+		sprintf(temp, "%s", data);
 	case -1:
 		sprintf(temp, "error");
 	}
-
-	return temp;
-}
-
-void Packet::GetTrans(float* x, float* y, float* z)
-{
-	*x = m_x;
-	*y = m_y;
-	*z = m_z;
 }
 
 char* Packet::GetBuf() //직렬화

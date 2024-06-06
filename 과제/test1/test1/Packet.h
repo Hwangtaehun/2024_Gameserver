@@ -39,8 +39,7 @@ public:
 	void SendAllConnect();
 	void SetMove(char* ip, float x, float y, float z);
 	void SendAllMove();
-	char* GetData();
-	void GetTrans(float* x, float* y, float* z);
+	void GetData(char* temp);
 	char* GetBuf();
 	void RecvMsg(char* str);
 	int GetSize();
