@@ -8,12 +8,11 @@
 using namespace std;
 
 enum Type {
-	PK_DATA = 1
+	PK_DATA = 0
 };
 
 class Packet {
 private:
-	short size;
 	short type;
 	short endmark;
 	char buf[BUFSIZE + 1] = {};
@@ -21,15 +20,13 @@ private:
 	unsigned char m_size[2] = {};
 	unsigned char m_type[2] = {};
 	unsigned char m_end[2] = {};
-
-	void trans(char* str);
 public:
+	short size;
 	Packet();
-	Packet(char* buf);
 	~Packet();
+	void RecvMsg(char* str);
 	void SendMsg(char* msg);
-	char* GetData();
+	void GetData();
 	char* GetBuf();
-	void SetBuf(char* str);
 	void Print();
 };

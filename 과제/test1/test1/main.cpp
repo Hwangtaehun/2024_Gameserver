@@ -2,19 +2,23 @@
 
 int main() {
 	//float x, y, z;
-	char buf[DATASIZE];
+	char buf[BUFSIZE];
+	char message[BUFSIZE];
 	//int type = 0;
 	Packet pc = Packet();
 	
 	//pc.SetMove("127.0.0.1", 100.0f, 100.0f, 100.0f);
 	pc.SetConnect("127.0.0.1");
 	pc.Print();
-	sprintf_s(buf, "%s", pc.GetBuf());
+	memcpy(buf, pc.GetBuf(), pc.GetSize());
 	pc.~Packet();
 
-	Packet opc = Packet(buf);
+	Packet opc = Packet();
+	opc.RecvMsg(buf);
+	//opc.SendAllMove();
 	opc.Print();
-	opc.GetData();
+	sprintf(message, "%s", opc.GetData());
+	printf("%s\n", message);
 	//opc.GetTrans(&x, &y, &z);
 	opc.~Packet();
 	//printf("\nx = %.2f, y = %.2f, z =%.2f\n", x, y, z);

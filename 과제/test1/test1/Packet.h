@@ -1,4 +1,5 @@
 #pragma once
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -8,10 +9,11 @@
 using namespace std;
 
 enum Type {
-	req_con = 1,
+	req_con = 0,
 	ack_con,
 	req_move,
-	ack_move
+	ack_move,
+	chat_string
 };
 
 class Packet {
@@ -32,14 +34,15 @@ private:
 	int Input(char* m_value, int i, int len);
 public:
 	Packet();
-	Packet(char* buf);
 	~Packet();
 	void SetConnect(char* ip);
-	void SendAllConnect(char* ip);
+	void SendAllConnect();
 	void SetMove(char* ip, float x, float y, float z);
-	void SendAllMove(char* mes);
-	void GetData();
+	void SendAllMove();
+	char* GetData();
 	void GetTrans(float* x, float* y, float* z);
 	char* GetBuf();
+	void RecvMsg(char* str);
+	int GetSize();
 	void Print();
 };

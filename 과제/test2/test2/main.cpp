@@ -1,19 +1,18 @@
 #include "Packet.h"
 
 int main() {
-	char buf[DATASIZE];
+	char buf[BUFSIZE] = {};
 	Packet pc = Packet();
 	
 	pc.SendMsg("가나다라마바사");
 	pc.Print();
-	sprintf_s(buf, "%s", pc.GetBuf());
+	memcpy(buf, pc.GetBuf(), pc.size);
 	pc.~Packet();
 
-	Packet opc = Packet(buf);
+	Packet opc = Packet();
+	opc.RecvMsg(buf);
 	opc.Print();
-	sprintf_s(buf, "%s", opc.GetData());
 	opc.~Packet();
-	printf("buf = %s\n", buf);
 
 	return 0;
 }

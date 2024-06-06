@@ -7,44 +7,7 @@ Packet::Packet()
 	endmark = 0xFF;
 }
 
-Packet::Packet(char* str)
-{
-	size = 0;
-	type = -1;
-	endmark = 0xFF;
-
-	trans(str);
-}
-
 Packet::~Packet(){}
-
-void Packet::trans(char* str)
-{
-	int j = 0;
-	int len = strlen(str);
-
-	for (int i = 0; i < 2; i++) {
-		m_size[i] = str[i];
-	}
-	for (int i = 2; i < 4; i++) {
-		m_type[i - 2] = str[i];
-	}
-	for (int i = 4; i < len - 1; i++) {
-		data[i - 4] = str[i];
-		if (len - 2 == i) {
-			data[i - 4] = '\0';
-		}
-	}
-	for (int i = len - 2; i < len; i++) {
-		m_end[j] = str[i];
-		j++;
-	}
-
-
-	size = short(m_size[1]);
-	type = short(m_type[1]);
-	endmark = short(m_end[1]);
-}
 
 void Packet::SendMsg(char* msg)
 {
@@ -53,51 +16,36 @@ void Packet::SendMsg(char* msg)
 	size = (short)(strlen(data) + 6);
 }
 
-char* Packet::GetData()
+void Packet::GetData()
 {
 	switch (type)
 	{
 	case PK_DATA:
-		return data;
+		printf("%s\n", data);
 		break;
 	case -1:
 	default:
-		return "error";
+		printf("error");
 	}
 }
 
-char* Packet::GetBuf()
+char* Packet::GetBuf() //직렬화
 {
-	int j = 0;
+	memset(buf, 0, sizeof(buf));
+	memcpy(buf, &size, sizeof(size));
+	memcpy(buf + sizeof(size), &type, sizeof(type));
+	memcpy(buf + sizeof(size) + sizeof(type), data, strlen(data));
+	memcpy(buf + sizeof(size) + sizeof(type) + strlen(data), &endmark, sizeof(endmark));
 
-	m_size[0] = ' ';
-	m_size[1] = (char)size;
-	m_type[0] = ' ';
-	m_type[1] = (char)type;
-	m_end[0] = ' ';
-	m_end[1] = (char)endmark;
-	
-	for (int i = 0; i < 2; i++) {
-		buf[i] = m_size[i];
-	}
-	for (int i = 2; i < 4; i++) {
-		buf[i] = m_type[i - 2];
-	}
-	for (int i = 4; i < size - 2; i++) {
-		buf[i] = data[i - 4];
-	}
-	for (int i = size - 2; i < size; i++) {
-		buf[i] = m_end[j];
-		j++;
-	}
-	
-	buf[size] = '\0';
 	return buf;
 }
 
-void Packet::SetBuf(char* str)
+void Packet::RecvMsg(char* str) //비직렬화
 {
-	trans(str);
+	memcpy(&size, str, sizeof(size));
+	memcpy(&type, str + sizeof(size), sizeof(type));
+	memcpy(data, str + sizeof(size) + sizeof(type), size - 6);
+	memcpy(&endmark, str + sizeof(size) + sizeof(type) + size - 6, sizeof(endmark));
 }
 
 void Packet::Print()
