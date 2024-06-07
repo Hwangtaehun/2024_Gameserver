@@ -31,17 +31,20 @@ private:
 	unsigned char m_end[2] = {};
 
 	void Separate(char* ip, char* x, char* y, char* z);
-	int Input(char* m_value, int i, int len);
+	void Separate(char* data, float* x, float* y, float* z);
+	int Input(char* value, int i, int len);
+	int Input(char* msg, char* value, int i, int len);
 public:
 	Packet();
 	~Packet();
 	void SetConnect(char* ip);
 	void SendAllConnect();
-	void SetMove(char* ip, float x, float y, float z);
+	void SetMove(char* ip, char* msg);
 	void SendAllMove();
 	void GetData(char* temp);
 	char* GetBuf();
 	void RecvMsg(char* str);
 	int GetSize();
+	void GetPos(float* x, float* y, float* z);
 	void Print();
 };

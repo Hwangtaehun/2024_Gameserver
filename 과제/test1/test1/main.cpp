@@ -1,13 +1,14 @@
 #include "Packet.h"
+#define SERVERIP   "127.0.0.1"
 
 int main() {
-	//float x, y, z;
+	float x, y, z;
 	char buf[BUFSIZE];
 	char message[BUFSIZE];
 	//int type = 0;
 	Packet pc = Packet();
 	
-	pc.SetMove("127.0.0.1", 100.0f, 100.0f, 100.0f);
+	pc.SetMove(SERVERIP, "100.0f,100.0f,100.0f");
 	//pc.SetConnect("127.0.0.1");
 	pc.Print();
 	memcpy(buf, pc.GetBuf(), pc.GetSize());
@@ -19,9 +20,9 @@ int main() {
 	opc.Print();
 	opc.GetData(message);
 	printf("%s\n", message);
-	//opc.GetTrans(&x, &y, &z);
+	opc.GetPos(&x, &y, &z);
 	opc.~Packet();
-	//printf("\nx = %.2f, y = %.2f, z =%.2f\n", x, y, z);
+	printf("\nx = %.2f, y = %.2f, z =%.2f\n", x, y, z);
 
 	return 0;
 }

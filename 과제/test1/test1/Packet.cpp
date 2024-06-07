@@ -45,24 +45,82 @@ void Packet::Separate(char* ip, char* x, char* y, char* z)
 	}
 }
 
-int Packet::Input(char* m_value, int i, int len)
+void Packet::Separate(char* msg, float* x, float* y, float* z) 
+{
+	char c_x[16] = {}, c_y[16] = {}, c_z[16] = {};
+	int len = 0, i = 0, cnt = 0;
+
+	for (i = 0; i <= DATASIZE; i++) {
+		if (msg[i] == '\0') {
+			len = i;
+			i = 0;
+			break;
+		}
+	}
+
+	while (cnt < 3) {
+		switch (cnt)
+		{
+		case 0:
+			i = Input(msg, c_x, i, len);
+			break;
+		case 1:
+			i = Input(msg, c_y, i, len);
+			break;
+		case 2:
+			i = Input(msg, c_z, i, len);
+			break;
+		}
+
+		cnt++;
+	}
+
+	*x = stof(c_x);
+	*y = stof(c_y);
+	*z = stof(c_z);
+}
+
+int Packet::Input(char* value, int i, int len)
 {
 	int j = 0;
 
 	for (i; i < len; i++) {
 		if (data[i] == ',') {
-			m_value[j] = '\0';
+			value[j] = '\0';
 			i++;
 			break;
 		}
 		else {
-			m_value[j] = data[i];
+			value[j] = data[i];
 		}
 		j++;
 	}
 
 	if (i == len) {
-		m_value[j] = '\0';
+		value[j] = '\0';
+	}
+
+	return i;
+}
+
+int Packet::Input(char* msg, char* value, int i, int len)
+{
+	int j = 0;
+
+	for (i; i < len; i++) {
+		if (msg[i] == ',') {
+			value[j] = '\0';
+			i++;
+			break;
+		}
+		else {
+			value[j] = msg[i];
+		}
+		j++;
+	}
+
+	if (i == len) {
+		value[j] = '\0';
 	}
 
 	return i;
@@ -81,9 +139,12 @@ void Packet::SendAllConnect()
 	size = (short)strlen(data) + 6;
 }
 
-void Packet::SetMove(char* ip, float x, float y, float z)
+void Packet::SetMove(char* ip, char* msg)
 {
+	float x = 0, y = 0, z = 0;
+
 	type = req_move;
+	Separate(msg, &x, &y, &z);
 	sprintf_s(data, "%s,%.2f,%.2f,%.2f\0", ip, x, y, z);
 	size = (short)strlen(data) + 6;
 }
@@ -145,6 +206,13 @@ void Packet::RecvMsg(char* str)
 int Packet::GetSize()
 {
 	return (int)size;
+}
+
+void Packet::GetPos(float* x, float* y, float* z)
+{
+	*x = m_x;
+	*y = m_y;
+	*z = m_z;
 }
 
 void Packet::Print()
