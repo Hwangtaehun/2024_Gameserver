@@ -14,13 +14,10 @@
 class Client
 {
 public:
-    Client(WSADATA wsa);
+    Client();
     ~Client();
-    void Fsocket();
-    void Fceconnet();
-    void Frun();
-    bool Fsend();
-    bool Frecv();
+    void Ready();
+    void Run();
 
 private:
     int retval;

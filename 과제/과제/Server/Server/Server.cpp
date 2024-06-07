@@ -90,12 +90,40 @@ DWORD Server::ProcessClient(LPVOID arg)
     int retval;
     SOCKADDR_IN clientaddr;
     int addrlen;
-    char buf[BUFSIZE + 1];
     Packet pk = Packet();
 
     // 클라이언트 정보 얻기
     addrlen = sizeof(clientaddr);
     getpeername(client_sock, (SOCKADDR*)&clientaddr, &addrlen);
+
+    //추가
+    time_t timer;
+    timer = time(NULL);
+    struct tm* t;
+    t = localtime(&timer);
+
+    // 데이터 받기
+    retval = recv(client_sock, buf, BUFSIZE, 0);
+    if (retval == SOCKET_ERROR) {
+        Err_display("recv()");
+        return 0;
+    }
+    else if (retval == 0)
+        return 0;
+
+    // 받은 데이터 출력
+    buf[retval] = '\0';
+
+    sprintf(buf, "%d년 %d월 %d일 %d시 %d분 %d초 %s",
+        t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, inet_ntoa(clientaddr.sin_addr));
+    pk.SetConnect(buf);
+    memcpy(buf, pk.GetBuf(), pk.GetSize());
+
+    retval = send(client_sock, buf, pk.GetSize(), 0);
+    if (retval == SOCKET_ERROR) {
+        Err_display("send()");
+        return 0;
+    }
 
     while (1) {
         // 데이터 받기
@@ -115,7 +143,7 @@ DWORD Server::ProcessClient(LPVOID arg)
             ntohs(clientaddr.sin_port), buf);
 
         // 데이터 보내기
-        sprintf(buf, "%s", pk.GetBuf());
+        memcpy(buf, pk.GetBuf(), pk.GetSize());
         retval = send(client_sock, buf, retval, 0);
         if (retval == SOCKET_ERROR) {
             Err_display("send()");

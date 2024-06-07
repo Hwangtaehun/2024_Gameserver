@@ -160,6 +160,8 @@ void Packet::SendAllMove()
 void Packet::RecvMsg(char* str) //비직렬화
 {
 	int len;
+
+	memset(data, 0, sizeof(data));
 	memcpy(&size, str, sizeof(size));
 	memcpy(&type, str + sizeof(size), sizeof(type));
 	len = (int)size - sizeof(size) - sizeof(type) - sizeof(endmark);

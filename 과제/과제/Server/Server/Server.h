@@ -5,10 +5,13 @@
 #include <winsock2.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 #include "Packet.h"
 
 #define SERVERPORT 9000
 #define BUFSIZE    512
+
+static char buf[BUFSIZE + 1];
 
 class Server
 {
@@ -26,7 +29,6 @@ private:
     SOCKET client_sock;
     SOCKADDR_IN clientaddr;
     int addrlen;
-    char buf[BUFSIZE + 1];
 
     static void Err_quit(const char* msg);
     static void Err_display(const char* msg);

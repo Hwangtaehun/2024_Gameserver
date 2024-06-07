@@ -5,84 +5,226 @@ Packet::Packet()
 	size = 0;
 	type = -1;
 	endmark = 0xFF;
+	m_x = 0.0f;
+	m_y = 0.0f;
+	m_z = 0.0f;
 }
 
 Packet::~Packet(){}
 
-void Packet::SendMsg(char* msg)
+void Packet::Separate(char* ip, char* x, char* y, char* z)
 {
-	type = PK_DATA;
-	sprintf_s(data, "%s\0", msg);
-	size = (short)(strlen(data) + 6);
+	int len = 0, i = 0, cnt = 0;
+
+	for (i = 0; i <= DATASIZE; i++) {
+		if (data[i] == '\0') {
+			len = i;
+			i = 0;
+			break;
+		}
+	}
+
+	while (cnt < 4) {
+		switch (cnt)
+		{
+		case 0:
+			i = Input(ip, i, len);
+			break;
+		case 1:
+			i = Input(x, i, len);
+			break;
+		case 2:
+			i = Input(y, i, len);
+			break;
+		case 3:
+			i = Input(z, i, len);
+			break;
+		}
+
+		cnt++;
+	}
 }
 
-void Packet::GetData(char* msg)
+void Packet::Separate(char* msg, float* x, float* y, float* z) 
+{
+	char c_x[16] = {}, c_y[16] = {}, c_z[16] = {};
+	int len = 0, i = 0, cnt = 0;
+
+	for (i = 0; i <= DATASIZE; i++) {
+		if (msg[i] == '\0') {
+			len = i;
+			i = 0;
+			break;
+		}
+	}
+
+	while (cnt < 3) {
+		switch (cnt)
+		{
+		case 0:
+			i = Input(msg, c_x, i, len);
+			break;
+		case 1:
+			i = Input(msg, c_y, i, len);
+			break;
+		case 2:
+			i = Input(msg, c_z, i, len);
+			break;
+		}
+
+		cnt++;
+	}
+
+	*x = stof(c_x);
+	*y = stof(c_y);
+	*z = stof(c_z);
+}
+
+int Packet::Input(char* value, int i, int len)
+{
+	int j = 0;
+
+	for (i; i < len; i++) {
+		if (data[i] == ',') {
+			value[j] = '\0';
+			i++;
+			break;
+		}
+		else {
+			value[j] = data[i];
+		}
+		j++;
+	}
+
+	if (i == len) {
+		value[j] = '\0';
+	}
+
+	return i;
+}
+
+int Packet::Input(char* msg, char* value, int i, int len)
+{
+	int j = 0;
+
+	for (i; i < len; i++) {
+		if (msg[i] == ',') {
+			value[j] = '\0';
+			i++;
+			break;
+		}
+		else {
+			value[j] = msg[i];
+		}
+		j++;
+	}
+
+	if (i == len) {
+		value[j] = '\0';
+	}
+
+	return i;
+}
+
+//클라이언트가 서버 연결
+void Packet::SetConnect(char* ip)
+{
+	type = req_con;
+	sprintf_s(data, "%s\0", ip);
+	size = (short)strlen(data) + 6;
+}
+
+//서버에 연결된 클라이언트 ip를 모두에게 전달
+void Packet::SendAllConnect()
+{
+	type = ack_con;
+	size = (short)strlen(data) + 6;
+}
+
+void Packet::SetMove(char* ip, char* msg)
+{
+	float x = 0, y = 0, z = 0;
+
+	type = req_move;
+	Separate(msg, &x, &y, &z);
+	sprintf_s(data, "%s,%.2f,%.2f,%.2f\0", ip, x, y, z);
+	size = (short)strlen(data) + 6;
+}
+
+void Packet::SendAllMove()
+{
+	type = ack_move;
+	size = (short)strlen(data) + 6;
+}
+
+void Packet::RecvMsg(char* str) //비직렬화
+{
+	int len;
+
+	memset(data, 0, sizeof(data));
+	memcpy(&size, str, sizeof(size));
+	memcpy(&type, str + sizeof(size), sizeof(type));
+	len = (int)size - sizeof(size) - sizeof(type) - sizeof(endmark);
+	memcpy(data, str + sizeof(size) + sizeof(type), len);
+	memcpy(&endmark, str + sizeof(size) + sizeof(type) + len, sizeof(endmark));
+	memcpy(buf, str, size);
+}
+
+void Packet::SendMsg(char* msg)
+{
+	type = chat_string;
+	sprintf_s(data, "%s\0", msg);
+	size = (short)strlen(data) + 6;
+}
+
+void Packet::GetData(char* temp)
 {
 	switch (type)
 	{
-	case PK_DATA:
-		sprintf(msg, "%s", data);
+	case req_con:
+		sprintf(temp, "%s, connection success", data);
+		break;
+	case ack_con:
+		sprintf(temp, "%s, connection completed", data);
+		break;
+	case req_move:
+	case ack_move:
+		char ip[16], x[16], y[16], z[16];
+		Separate(ip, x, y, z);
+		m_x = stof(x);
+		m_y = stof(y);
+		m_z = stof(z);
+		sprintf(temp, "%s, request to move %.2f, %.2f, %.2f", ip, m_x, m_y, m_z);
+		break;
+	case chat_string:
+		sprintf(temp, "%s", data);
 		break;
 	case -1:
-	default:
-		printf("error");
+		sprintf(temp, "error");
 	}
 }
 
-char* Packet::GetBuf()
+char* Packet::GetBuf() //직렬화
 {
-	int j = 0;
+	memset(buf, 0, sizeof(buf));
+	memcpy(buf, &size, sizeof(size));
+	memcpy(buf + sizeof(size), &type, sizeof(type));
+	memcpy(buf + sizeof(size) + sizeof(type), data, strlen(data));
+	memcpy(buf + sizeof(size) + sizeof(type) + strlen(data), &endmark, sizeof(endmark));
 
-	m_size[0] = ' ';
-	m_size[1] = (char)size;
-	m_type[0] = ' ';
-	m_type[1] = (char)type;
-	m_end[0] = ' ';
-	m_end[1] = (char)endmark;
-	
-	for (int i = 0; i < 2; i++) {
-		buf[i] = m_size[i];
-	}
-	for (int i = 2; i < 4; i++) {
-		buf[i] = m_type[i - 2];
-	}
-	for (int i = 4; i < size - 2; i++) {
-		buf[i] = data[i - 4];
-	}
-	for (int i = size - 2; i < size; i++) {
-		buf[i] = m_end[j];
-		j++;
-	}
-	
-	buf[size] = '\0';
 	return buf;
 }
 
-void Packet::RecvMsg(char* str)
+int Packet::GetSize()
 {
-	int j = 0;
-	int len = strlen(str);
+	return (int)size;
+}
 
-	for (int i = 0; i < 2; i++) {
-		m_size[i] = str[i];
-	}
-	for (int i = 2; i < 4; i++) {
-		m_type[i - 2] = str[i];
-	}
-	for (int i = 4; i < len - 1; i++) {
-		data[i - 4] = str[i];
-		if (len - 2 == i) {
-			data[i - 4] = '\0';
-		}
-	}
-	for (int i = len - 2; i < len; i++) {
-		m_end[j] = str[i];
-		j++;
-	}
-
-	size = short(m_size[1]);
-	type = short(m_type[1]);
-	endmark = short(m_end[1]);
+void Packet::GetPos(float* x, float* y, float* z)
+{
+	*x = m_x;
+	*y = m_y;
+	*z = m_z;
 }
 
 void Packet::Print()

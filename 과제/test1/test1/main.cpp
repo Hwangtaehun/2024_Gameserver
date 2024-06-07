@@ -34,7 +34,6 @@ int main() {
 	pc.SendMsg("가나다");
 	pc.Print();
 	memcpy(buf, pc.GetBuf(), pc.GetSize());
-	printf("길이: %d, 내용: %s\n", sizeof(buf), buf);
 	pc.~Packet();
 
 	Packet opc = Packet();

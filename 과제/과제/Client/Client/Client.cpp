@@ -1,24 +1,24 @@
 #include "Client.h"
 
-Client::Client(WSADATA wsa)
+Client::Client()
 {
-    this->wsa = wsa;
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+        return;
 }
 
 Client::~Client()
 {
     closesocket(sock);
+    // 윈속 종료
+    WSACleanup();
 }
 
-void Client::Fsocket()
+void Client::Ready()
 {
     // socket()
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock == INVALID_SOCKET) Err_quit("socket()");
-}
 
-void Client::Fceconnet()
-{
     SOCKADDR_IN serveraddr;
     ZeroMemory(&serveraddr, sizeof(serveraddr));
     serveraddr.sin_family = AF_INET;
@@ -28,10 +28,31 @@ void Client::Fceconnet()
     if (retval == SOCKET_ERROR) Err_quit("connect()");
 }
 
-void Client::Frun()
+void Client::Run()
 {
     Packet pk = Packet();
 
+    sprintf(buf, "connect");
+    retval = send(sock, buf, strlen(buf), 0);
+    if (retval == SOCKET_ERROR) {
+        Err_display("send()");
+        return;
+    }
+
+    retval = recv(sock, buf, BUFSIZE, 0);
+    if (retval == SOCKET_ERROR) {
+        Err_display("recv()");
+        return;
+    }
+    else if (retval == 0)
+        return;
+
+    // 받은 데이터 출력
+    buf[retval] = '\0';
+    pk.RecvMsg(buf);
+    pk.GetData(buf);
+    printf("%s\n", buf);
+    
     // 서버와 데이터 통신
     while (1) {
         // 데이터 입력
@@ -47,10 +68,10 @@ void Client::Frun()
             break;
 
         pk.SendMsg(buf);
-        sprintf(buf, "%s", pk.GetBuf());
+        memcpy(buf, pk.GetBuf(), pk.GetSize());
 
         // 데이터 보내기
-        retval = send(sock, buf, strlen(buf), 0);
+        retval = send(sock, buf, pk.GetSize(), 0);
         if (retval == SOCKET_ERROR) {
             Err_display("send()");
             break;
@@ -68,55 +89,12 @@ void Client::Frun()
 
         // 받은 데이터 출력
         buf[retval] = '\0';
+        pk.RecvMsg(buf);
         pk.GetData(buf);
         printf("[TCP 클라이언트] %d바이트를 받았습니다.\n", retval);
         printf("[받은 데이터] %s\n", buf);
     }
 
-}
-
-bool Client::Fsend()
-{
-    // 데이터 입력
-    printf("\n[보낼 데이터] ");
-    if (fgets(buf, BUFSIZE + 1, stdin) == NULL)
-        return true;
-
-    // '\n' 문자 제거
-    len = strlen(buf);
-    if (buf[len - 1] == '\n')
-        buf[len - 1] = '\0';//null 문자까지 처리
-    if (strlen(buf) == 0)
-        return true;
-
-    // 데이터 보내기
-    retval = send(sock, buf, strlen(buf), 0);
-    if (retval == SOCKET_ERROR) {
-        Err_display("send()");
-        return true;
-    }
-    printf("[TCP 클라이언트] %d바이트를 보냈습니다.\n", retval);
-
-    return false;
-}
-
-bool Client::Frecv()
-{
-    // 데이터 받기
-    retval = recv(sock, buf, BUFSIZE, 0);
-    if (retval == SOCKET_ERROR) {
-        Err_display("recv()");
-        return true;
-    }
-    else if (retval == 0)
-        return true;
-
-    // 받은 데이터 출력
-    buf[retval] = '\0';
-    printf("[TCP 클라이언트] %d바이트를 받았습니다.\n", retval);
-    printf("[받은 데이터] %s\n", buf);
-
-    return false;
 }
 
 // 소켓 함수 오류 출력 후 종료
