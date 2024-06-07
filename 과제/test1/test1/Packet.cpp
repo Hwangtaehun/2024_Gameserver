@@ -126,6 +126,7 @@ int Packet::Input(char* msg, char* value, int i, int len)
 	return i;
 }
 
+//클라이언트가 서버 연결
 void Packet::SetConnect(char* ip)
 {
 	type = req_con;
@@ -133,6 +134,7 @@ void Packet::SetConnect(char* ip)
 	size = (short)strlen(data) + 6;
 }
 
+//서버에 연결된 클라이언트 ip를 모두에게 전달
 void Packet::SendAllConnect()
 {
 	type = ack_con;
@@ -152,6 +154,24 @@ void Packet::SetMove(char* ip, char* msg)
 void Packet::SendAllMove()
 {
 	type = ack_move;
+	size = (short)strlen(data) + 6;
+}
+
+void Packet::RecvMsg(char* str) //비직렬화
+{
+	int len;
+	memcpy(&size, str, sizeof(size));
+	memcpy(&type, str + sizeof(size), sizeof(type));
+	len = (int)size - sizeof(size) - sizeof(type) - sizeof(endmark);
+	memcpy(data, str + sizeof(size) + sizeof(type), len);
+	memcpy(&endmark, str + sizeof(size) + sizeof(type) + len, sizeof(endmark));
+	memcpy(buf, str, size);
+}
+
+void Packet::SendMsg(char* msg)
+{
+	type = chat_string;
+	sprintf_s(data, "%s\0", msg);
 	size = (short)strlen(data) + 6;
 }
 
@@ -176,6 +196,7 @@ void Packet::GetData(char* temp)
 		break;
 	case chat_string:
 		sprintf(temp, "%s", data);
+		break;
 	case -1:
 		sprintf(temp, "error");
 	}
@@ -190,17 +211,6 @@ char* Packet::GetBuf() //직렬화
 	memcpy(buf + sizeof(size) + sizeof(type) + strlen(data), &endmark, sizeof(endmark));
 
 	return buf;
-}
-
-void Packet::RecvMsg(char* str)
-{
-	int len;
-	memcpy(&size, str, sizeof(size));
-	memcpy(&type, str + sizeof(size), sizeof(type));
-	len = (int)size - sizeof(size) - sizeof(type) - sizeof(endmark);
-	memcpy(data, str + sizeof(size) + sizeof(type), len);
-	memcpy(&endmark, str + sizeof(size) + sizeof(type) + len, sizeof(endmark));
-	memcpy(buf, str, size);
 }
 
 int Packet::GetSize()

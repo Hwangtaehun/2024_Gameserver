@@ -41,9 +41,10 @@ public:
 	void SendAllConnect();
 	void SetMove(char* ip, char* msg);
 	void SendAllMove();
+	void RecvMsg(char* str);
+	void SendMsg(char* msg);
 	void GetData(char* temp);
 	char* GetBuf();
-	void RecvMsg(char* str);
 	int GetSize();
 	void GetPos(float* x, float* y, float* z);
 	void Print();
