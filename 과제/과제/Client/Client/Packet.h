@@ -1,4 +1,5 @@
 #pragma once
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -26,7 +27,7 @@ public:
 	~Packet();
 	void RecvMsg(char* str);
 	void SendMsg(char* msg);
-	void GetData();
+	void GetData(char* msg);
 	char* GetBuf();
 	void Print();
 };

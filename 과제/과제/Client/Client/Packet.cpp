@@ -16,12 +16,12 @@ void Packet::SendMsg(char* msg)
 	size = (short)(strlen(data) + 6);
 }
 
-void Packet::GetData()
+void Packet::GetData(char* msg)
 {
 	switch (type)
 	{
 	case PK_DATA:
-		printf("%s\n", data);
+		sprintf(msg, "%s", data);
 		break;
 	case -1:
 	default:

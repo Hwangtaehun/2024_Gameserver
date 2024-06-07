@@ -110,11 +110,12 @@ DWORD Server::ProcessClient(LPVOID arg)
         // 받은 데이터 출력
         buf[retval] = '\0';
         pk.RecvMsg(buf);
-        printf("[TCP/%s:%d] ", inet_ntoa(clientaddr.sin_addr),
-            ntohs(clientaddr.sin_port));
-        pk.GetData();
+        pk.GetData(buf);
+        printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
+            ntohs(clientaddr.sin_port), buf);
 
         // 데이터 보내기
+        sprintf(buf, "%s", pk.GetBuf());
         retval = send(client_sock, buf, retval, 0);
         if (retval == SOCKET_ERROR) {
             Err_display("send()");
