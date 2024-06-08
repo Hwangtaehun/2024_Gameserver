@@ -91,6 +91,7 @@ DWORD Server::ProcessClient(LPVOID arg)
     SOCKADDR_IN clientaddr;
     int addrlen;
     Packet pk = Packet();
+    Inf myclient;
 
     // 클라이언트 정보 얻기
     addrlen = sizeof(clientaddr);
@@ -101,6 +102,10 @@ DWORD Server::ProcessClient(LPVOID arg)
     timer = time(NULL);
     struct tm* t;
     t = localtime(&timer);
+    strcpy(myclient.ip, inet_ntoa(clientaddr.sin_addr));
+    myclient.port = ntohs(clientaddr.sin_port);
+    myclient.socket = client_sock;
+    client.push_back(myclient);
 
     // 데이터 받기
     retval = recv(client_sock, buf, BUFSIZE, 0);
@@ -153,13 +158,22 @@ DWORD Server::ProcessClient(LPVOID arg)
 
         // 데이터 보내기
         memcpy(buf, pk.GetBuf(), pk.GetSize());
-        retval = send(client_sock, buf, retval, 0);
+        for (auto i : client) {
+            retval = send(i.socket, buf, retval, 0);
+            if (retval == SOCKET_ERROR) {
+                Err_display("send()");
+                break;
+            }
+        }
+        /*retval = send(client_sock, buf, retval, 0);
         if (retval == SOCKET_ERROR) {
             Err_display("send()");
             break;
-        }
+        }*/
 
         if (req_dis == pk.GetType()) {
+            u_short value = myclient.port;
+            client.erase(remove_if(client.begin(), client.end(), [value](const Inf& client) { return client.port == value; }), client.end());
             break;
         }
     }

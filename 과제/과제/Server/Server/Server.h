@@ -16,7 +16,8 @@
 struct Inf
 {
     char ip[16];
-    char port[6];
+    u_short port;
+    SOCKET socket;
 };
 
 static char buf[BUFSIZE + 1];
