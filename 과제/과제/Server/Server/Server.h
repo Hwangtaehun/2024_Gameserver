@@ -6,12 +6,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <vector>
 #include "Packet.h"
 
 #define SERVERPORT 9000
 #define BUFSIZE    512
 
+//클라이언트 정보
+struct Inf
+{
+    char ip[16];
+    char port[6];
+};
+
 static char buf[BUFSIZE + 1];
+static vector<Inf> client;
 
 class Server
 {

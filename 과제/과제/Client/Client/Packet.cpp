@@ -8,6 +8,7 @@ Packet::Packet()
 	m_x = 0.0f;
 	m_y = 0.0f;
 	m_z = 0.0f;
+	crt = true;
 }
 
 Packet::~Packet(){}
@@ -75,9 +76,16 @@ void Packet::Separate(char* msg, float* x, float* y, float* z)
 		cnt++;
 	}
 
-	*x = stof(c_x);
-	*y = stof(c_y);
-	*z = stof(c_z);
+	if (atoi(c_x) && atoi(c_y) && atoi(c_z)) {
+		*x = stof(c_x);
+		*y = stof(c_y);
+		*z = stof(c_z);
+		crt = true;
+	}
+	else {
+		crt = false;
+	}
+	
 }
 
 int Packet::Input(char* value, int i, int len)
@@ -135,9 +143,10 @@ void Packet::SetConnect(char* ip)
 }
 
 //서버에 연결된 클라이언트 ip를 모두에게 전달
-void Packet::SendAllConnect()
+void Packet::SendAllConnect(char* msg)
 {
 	type = ack_con;
+	sprintf_s(data, "%s\0", msg);
 	size = (short)strlen(data) + 6;
 }
 
@@ -177,8 +186,17 @@ void Packet::SendMsg(char* msg)
 	size = (short)strlen(data) + 6;
 }
 
+void Packet::SetClose(char* msg)
+{
+	type = req_dis;
+	sprintf_s(data, "%s\0", msg);
+	size = (short)strlen(data) + 6;
+}
+
 void Packet::GetData(char* temp)
 {
+	char ip[16], x[16], y[16], z[16];
+
 	switch (type)
 	{
 	case req_con:
@@ -188,18 +206,26 @@ void Packet::GetData(char* temp)
 		sprintf(temp, "%s, connection completed", data);
 		break;
 	case req_move:
-	case ack_move:
-		char ip[16], x[16], y[16], z[16];
 		Separate(ip, x, y, z);
 		m_x = stof(x);
 		m_y = stof(y);
 		m_z = stof(z);
 		sprintf(temp, "%s, request to move %.2f, %.2f, %.2f", ip, m_x, m_y, m_z);
+	case ack_move:
+		Separate(ip, x, y, z);
+		m_x = stof(x);
+		m_y = stof(y);
+		m_z = stof(z);
+		sprintf(temp, "%s, move to %.2f, %.2f, %.2f", ip, m_x, m_y, m_z);
 		break;
 	case chat_string:
 		sprintf(temp, "%s", data);
 		break;
+	case req_dis:
+		sprintf(temp, "%s, disconnected", data);
+		break;
 	case -1:
+	default:
 		sprintf(temp, "error");
 	}
 }
@@ -220,11 +246,21 @@ int Packet::GetSize()
 	return (int)size;
 }
 
+int Packet::GetType()
+{
+	return (int)type;
+}
+
 void Packet::GetPos(float* x, float* y, float* z)
 {
 	*x = m_x;
 	*y = m_y;
 	*z = m_z;
+}
+
+bool Packet::Check()
+{
+	return crt;
 }
 
 void Packet::Print()

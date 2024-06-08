@@ -13,11 +13,13 @@ enum Type {
 	ack_con,
 	req_move,
 	ack_move,
-	chat_string
+	chat_string,
+	req_dis
 };
 
 class Packet {
 private:
+	bool crt;
 	short size;
 	short type;
 	short endmark;
@@ -38,14 +40,17 @@ public:
 	Packet();
 	~Packet();
 	void SetConnect(char* ip);
-	void SendAllConnect();
+	void SendAllConnect(char* msg);
 	void SetMove(char* ip, char* msg);
 	void SendAllMove();
 	void RecvMsg(char* str);
 	void SendMsg(char* msg);
+	void SetClose(char* msg);
 	void GetData(char* temp);
 	char* GetBuf();
 	int GetSize();
+	int GetType();
 	void GetPos(float* x, float* y, float* z);
+	bool Check();
 	void Print();
 };

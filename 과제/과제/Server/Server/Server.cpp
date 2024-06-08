@@ -116,7 +116,7 @@ DWORD Server::ProcessClient(LPVOID arg)
 
     sprintf(buf, "%d년 %d월 %d일 %d시 %d분 %d초 %s",
         t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, inet_ntoa(clientaddr.sin_addr));
-    pk.SetConnect(buf);
+    pk.SendAllConnect(buf);
     memcpy(buf, pk.GetBuf(), pk.GetSize());
 
     retval = send(client_sock, buf, pk.GetSize(), 0);
@@ -142,11 +142,24 @@ DWORD Server::ProcessClient(LPVOID arg)
         printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
             ntohs(clientaddr.sin_port), buf);
 
+        if (req_move == pk.GetType()) {
+            pk.SendAllMove();
+        }
+        else if (req_dis == pk.GetType()) {
+            sprintf(buf, "%d년 %d월 %d일 %d시 %d분 %d초 %s",
+                t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, inet_ntoa(clientaddr.sin_addr));
+            pk.SetClose(buf);
+        }
+
         // 데이터 보내기
         memcpy(buf, pk.GetBuf(), pk.GetSize());
         retval = send(client_sock, buf, retval, 0);
         if (retval == SOCKET_ERROR) {
             Err_display("send()");
+            break;
+        }
+
+        if (req_dis == pk.GetType()) {
             break;
         }
     }

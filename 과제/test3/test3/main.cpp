@@ -1,45 +1,44 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <string.h>
+#include <vector>
 
-typedef struct {
-    short id;
-    short salary;
-    char name[50];
-} Employee;
+using namespace std;
 
-void serialize_employee(Employee* emp, unsigned char* buffer) {
-    memcpy(buffer, &emp->id, sizeof(short));
-    memcpy(buffer + sizeof(short), &emp->salary, sizeof(short));
-    memcpy(buffer + sizeof(short) + sizeof(short), emp->name, 50);
-}
-
-void deserialize_employee(unsigned char* buffer, Employee* emp) {
-    memcpy(&emp->id, buffer, sizeof(short));
-    memcpy(&emp->salary, buffer + sizeof(short), sizeof(short));
-    memcpy(emp->name, buffer + sizeof(short) + sizeof(short), 50);
-}
-
-//int main() {
-//    Employee emp1 = { 2, 2500, "John Doe" };
-//    unsigned char buffer[sizeof(int) + 50 + sizeof(float)];
-//
-//    // 직렬화
-//    serialize_employee(&emp1, buffer);
-//
-//    // 역직렬화
-//    Employee emp2;
-//    deserialize_employee(buffer, &emp2);
-//
-//    printf("ID: %hd, Name: %s, Salary: %hd\n", emp2.id, emp2.name, emp2.salary);
-//
-//    return 0;
-//}
+struct Inf
+{
+    char ip[16];
+    char port[6];
+};
 
 int main() {
-    char str[] = "127.0.0.1,100.0f,100.0f,100.0f";
-    char* sep = strtok(str,",");
-    printf("%s\n", sep);
+    vector<Inf> client;
+
+    Inf myclient = { "127.0.0.1", "1000" };
+    client.push_back(myclient);
+    strcpy(myclient.ip, "192.0.0.1");
+    strcpy(myclient.port, "2000");
+    client.push_back(myclient);
+    strcpy(myclient.ip, "192.0.1.2");
+    strcpy(myclient.port, "3000");
+    client.push_back(myclient);
+    strcpy(myclient.ip, "192.0.2.3");
+    strcpy(myclient.port, "4000");
+    client.push_back(myclient);
+    strcpy(myclient.ip, "192.0.3.4");
+    strcpy(myclient.port, "5000");
+    client.push_back(myclient);
+
+    for (auto i : client) {
+        printf("ip: %s, port: %s\n", i.ip, i.port);
+    }
+
+    client.erase(remove_if(client.begin(), client.end(),[](const Inf& client) { return strcmp(client.port, "3000") == 0;}),client.end());
+    printf("\n");
+
+    for (auto i : client) {
+        printf("ip: %s, port: %s\n", i.ip, i.port);
+    }
 
     return 0;
 }

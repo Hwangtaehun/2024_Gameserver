@@ -55,20 +55,53 @@ void Client::Run()
     
     // 서버와 데이터 통신
     while (1) {
-        // 데이터 입력
-        printf("\n[보낼 데이터] ");
-        if (fgets(buf, BUFSIZE + 1, stdin) == NULL)
-            break;
+        char me;
+        if (!pk.Check()) {
+            me = 'M';
+        }
+        else {
+            //메뉴 선택
+            printf("M: 위치변경, C: 대화, X: 종료로 원하는 메뉴를 선택해주세요.\n");
+            me = getchar();
+            getchar();
+        }
+        
 
-        // '\n' 문자 제거
-        len = strlen(buf);
-        if (buf[len - 1] == '\n')
-            buf[len - 1] = '\0';//null 문자까지 처리
-        if (strlen(buf) == 0)
+        if(me == 'X'){
+            pk.SetClose(SERVERIP);
+            memcpy(buf, pk.GetBuf(), pk.GetSize());
             break;
+        }
+        else if (me != 'C' && me != 'M') {
+            printf("잘못 입력했습니다.\n");
+            continue;
+        }
+        else {
+            // 데이터 입력
+            printf("\n[보낼 데이터] ");
+            if (fgets(buf, BUFSIZE + 1, stdin) == NULL)
+                break;
 
-        pk.SendMsg(buf);
-        memcpy(buf, pk.GetBuf(), pk.GetSize());
+            // '\n' 문자 제거
+            len = strlen(buf);
+            if (buf[len - 1] == '\n')
+                buf[len - 1] = '\0';//null 문자까지 처리
+            if (strlen(buf) == 0)
+                break;
+
+            if (me == 'M') {
+                pk.SetMove(SERVERIP, buf);
+                if (!pk.Check()) {
+                    printf("좌표를 잘못 입력했습니다. 다시 입력해주세요.");
+                    continue;
+                }
+                memcpy(buf, pk.GetBuf(), pk.GetSize());
+            }
+            else {
+                pk.SendMsg(buf);
+                memcpy(buf, pk.GetBuf(), pk.GetSize());
+            }
+        }
 
         // 데이터 보내기
         retval = send(sock, buf, pk.GetSize(), 0);
