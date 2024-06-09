@@ -31,6 +31,7 @@ void Client::Ready()
 void Client::Run()
 {
     Packet pk = Packet();
+    HANDLE hThread = CreateThread(NULL, 0, ThreadRecv, (LPVOID)sock, 0, NULL);
 
     sprintf(buf, "connect");
     retval = send(sock, buf, strlen(buf), 0);
@@ -70,7 +71,6 @@ void Client::Run()
         if(me == 'X'){
             pk.SetClose(SERVERIP);
             memcpy(buf, pk.GetBuf(), pk.GetSize());
-            break;
         }
         else if (me != 'C' && me != 'M') {
             printf("잘못 입력했습니다.\n");
@@ -111,23 +111,29 @@ void Client::Run()
         }
         printf("[TCP 클라이언트] %d바이트를 보냈습니다.\n", retval);
 
-        // 데이터 받기
-        retval = recv(sock, buf, BUFSIZE, 0);
-        if (retval == SOCKET_ERROR) {
-            Err_display("recv()");
+        //// 데이터 받기
+        //retval = recv(sock, buf, BUFSIZE, 0);
+        //if (retval == SOCKET_ERROR) {
+        //    Err_display("recv()");
+        //    break;
+        //}
+        //else if (retval == 0)
+        //    break;
+
+        //// 받은 데이터 출력
+        //buf[retval] = '\0';
+        //pk.RecvMsg(buf);
+        //pk.GetData(buf);
+        //printf("[TCP 클라이언트] %d바이트를 받았습니다.\n", retval);
+        //printf("[받은 데이터] %s\n", buf);
+
+        if (me == 'X') {
             break;
         }
-        else if (retval == 0)
-            break;
-
-        // 받은 데이터 출력
-        buf[retval] = '\0';
-        pk.RecvMsg(buf);
-        pk.GetData(buf);
-        printf("[TCP 클라이언트] %d바이트를 받았습니다.\n", retval);
-        printf("[받은 데이터] %s\n", buf);
     }
 
+    if (hThread == NULL) { closesocket(sock); }
+    else { CloseHandle(hThread); }
 }
 
 // 소켓 함수 오류 출력 후 종료
@@ -155,4 +161,33 @@ void Client::Err_display(const char* msg)
         (LPTSTR)&lpMsgBuf, 0, NULL);
     printf("[%s] %s", msg, (char*)lpMsgBuf);
     LocalFree(lpMsgBuf);
+}
+
+DWORD __stdcall Client::ThreadRecv(LPVOID arg)
+{
+    int retval;
+    char buf[BUFSIZE + 1];
+    Packet pk = Packet();
+    SOCKET sock = (SOCKET)arg;
+    
+    while (1)
+    {
+        // 데이터 받기
+        retval = recv(sock, buf, BUFSIZE, 0);
+        if (retval == SOCKET_ERROR) {
+            Err_display("recv()");
+            break;
+        }
+        else if (retval == 0)
+            break;
+
+        // 받은 데이터 출력
+        buf[retval] = '\0';
+        pk.RecvMsg(buf);
+        pk.GetData(buf);
+        printf("[TCP 클라이언트] %d바이트를 받았습니다.\n", retval);
+        printf("[받은 데이터] %s\n", buf);
+    }
+
+    return 0;
 }

@@ -43,4 +43,5 @@ private:
     static void Err_quit(const char* msg);
     static void Err_display(const char* msg);
     static DWORD WINAPI ProcessClient(LPVOID arg);
+    static void Print();
 };

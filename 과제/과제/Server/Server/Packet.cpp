@@ -211,6 +211,7 @@ void Packet::GetData(char* temp)
 		m_y = stof(y);
 		m_z = stof(z);
 		sprintf(temp, "%s, request to move %.2f, %.2f, %.2f", ip, m_x, m_y, m_z);
+		break;
 	case ack_move:
 		Separate(ip, x, y, z);
 		m_x = stof(x);

@@ -158,30 +158,36 @@ DWORD Server::ProcessClient(LPVOID arg)
 
         // 데이터 보내기
         memcpy(buf, pk.GetBuf(), pk.GetSize());
-        for (auto i : client) {
-            retval = send(i.socket, buf, retval, 0);
+        for (int i = 0; i < client.size(); i++) {
+            retval = send(client[i].socket, buf, pk.GetSize(), 0);
             if (retval == SOCKET_ERROR) {
                 Err_display("send()");
                 break;
             }
         }
-        /*retval = send(client_sock, buf, retval, 0);
+        /*retval = send(client_sock, buf, pk.GetSize(), 0);
         if (retval == SOCKET_ERROR) {
             Err_display("send()");
             break;
         }*/
-
-        if (req_dis == pk.GetType()) {
-            u_short value = myclient.port;
-            client.erase(remove_if(client.begin(), client.end(), [value](const Inf& client) { return client.port == value; }), client.end());
-            break;
-        }
     }
 
     // closesocket()
     closesocket(client_sock);
     printf("[TCP 서버] 클라이언트 종료: IP 주소=%s, 포트 번호=%d\n",
         inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
+    u_short value = myclient.port;
+    client.erase(remove_if(client.begin(), client.end(), [value](const Inf& client) { return client.port == value; }), client.end());
 
     return 0;
+}
+
+void Server::Print()
+{
+    SOCKET m_sk;
+    for (int i = 0; i < client.size(); i++)
+    {
+        m_sk = client[i].socket;
+        printf("%d번째 %s, %d\n", i, client[i].ip, client[i].port);
+    }
 }

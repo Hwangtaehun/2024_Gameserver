@@ -28,9 +28,6 @@ private:
 	float m_z;
 	char buf[BUFSIZE + 1] = {};
 	char data[DATASIZE + 1] = {};
-	unsigned char m_size[2] = {};
-	unsigned char m_type[2] = {};
-	unsigned char m_end[2] = {};
 
 	void Separate(char* ip, char* x, char* y, char* z);
 	void Separate(char* data, float* x, float* y, float* z);
