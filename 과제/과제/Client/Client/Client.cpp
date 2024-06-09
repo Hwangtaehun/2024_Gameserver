@@ -31,7 +31,7 @@ void Client::Ready()
 void Client::Run()
 {
     Packet pk = Packet();
-    HANDLE hThread = CreateThread(NULL, 0, ThreadRecv, (LPVOID)sock, 0, NULL);
+    HANDLE hThread;
 
     sprintf(buf, "connect");
     retval = send(sock, buf, strlen(buf), 0);
@@ -53,6 +53,9 @@ void Client::Run()
     pk.RecvMsg(buf);
     pk.GetData(buf);
     printf("%s\n", buf);
+    printf("M: 위치변경, C: 대화, X: 종료로 원하는 메뉴를 선택해주세요.\n");
+
+    hThread = CreateThread(NULL, 0, ThreadRecv, (LPVOID)sock, 0, NULL);
     
     // 서버와 데이터 통신
     while (1) {
@@ -62,7 +65,6 @@ void Client::Run()
         }
         else {
             //메뉴 선택
-            printf("M: 위치변경, C: 대화, X: 종료로 원하는 메뉴를 선택해주세요.\n");
             me = getchar();
             getchar();
         }
@@ -110,23 +112,6 @@ void Client::Run()
             break;
         }
         printf("[TCP 클라이언트] %d바이트를 보냈습니다.\n", retval);
-
-        //// 데이터 받기
-        //retval = recv(sock, buf, BUFSIZE, 0);
-        //if (retval == SOCKET_ERROR) {
-        //    Err_display("recv()");
-        //    break;
-        //}
-        //else if (retval == 0)
-        //    break;
-
-        //// 받은 데이터 출력
-        //buf[retval] = '\0';
-        //pk.RecvMsg(buf);
-        //pk.GetData(buf);
-        //printf("[TCP 클라이언트] %d바이트를 받았습니다.\n", retval);
-        //printf("[받은 데이터] %s\n", buf);
-
         if (me == 'X') {
             break;
         }
