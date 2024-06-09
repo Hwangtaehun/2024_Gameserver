@@ -38,6 +38,8 @@ void Server::Chat()
 {
     HANDLE hThread;
 
+    InitializeCriticalSection(&hCriticalSection);
+
     while (1) {
         addrlen = sizeof(clientaddr);
         client_sock = accept(listen_sock, (SOCKADDR*)&clientaddr, &addrlen);
@@ -55,6 +57,8 @@ void Server::Chat()
         if (hThread == NULL) { closesocket(client_sock); }
         else { CloseHandle(hThread); }
     }
+
+    DeleteCriticalSection(&hCriticalSection);
 }
 
 // 소켓 함수 오류 출력 후 종료
@@ -99,6 +103,7 @@ DWORD Server::ProcessClient(LPVOID arg)
 
     //추가
     time_t timer;
+    char start[BUFSIZE + 1];
     timer = time(NULL);
     struct tm* t;
     t = localtime(&timer);
@@ -108,7 +113,7 @@ DWORD Server::ProcessClient(LPVOID arg)
     client.push_back(myclient);
 
     // 데이터 받기
-    retval = recv(client_sock, buf, BUFSIZE, 0);
+    retval = recv(client_sock, start, BUFSIZE, 0);
     if (retval == SOCKET_ERROR) {
         Err_display("recv()");
         return 0;
@@ -117,14 +122,14 @@ DWORD Server::ProcessClient(LPVOID arg)
         return 0;
 
     // 받은 데이터 출력
-    buf[retval] = '\0';
+    start[retval] = '\0';
 
-    sprintf(buf, "%d년 %d월 %d일 %d시 %d분 %d초 %s",
+    sprintf(start, "%d년 %d월 %d일 %d시 %d분 %d초 %s",
         t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, inet_ntoa(clientaddr.sin_addr));
-    pk.SendAllConnect(buf);
-    memcpy(buf, pk.GetBuf(), pk.GetSize());
+    pk.SendAllConnect(start);
+    memcpy(start, pk.GetBuf(), pk.GetSize());
 
-    retval = send(client_sock, buf, pk.GetSize(), 0);
+    retval = send(client_sock, start, pk.GetSize(), 0);
     if (retval == SOCKET_ERROR) {
         Err_display("send()");
         return 0;
@@ -156,6 +161,8 @@ DWORD Server::ProcessClient(LPVOID arg)
             pk.SetClose(buf);
         }
 
+        EnterCriticalSection(&hCriticalSection);
+
         // 데이터 보내기
         memcpy(buf, pk.GetBuf(), pk.GetSize());
         for (int i = 0; i < client.size(); i++) {
@@ -170,14 +177,20 @@ DWORD Server::ProcessClient(LPVOID arg)
             Err_display("send()");
             break;
         }*/
+
+        LeaveCriticalSection(&hCriticalSection);
+
+        if (req_dis == pk.GetType()) {
+            u_short value = myclient.port;
+            client.erase(remove_if(client.begin(), client.end(), [value](const Inf& client) { return client.port == value; }), client.end());
+            break;
+        }
     }
 
     // closesocket()
     closesocket(client_sock);
     printf("[TCP 서버] 클라이언트 종료: IP 주소=%s, 포트 번호=%d\n",
         inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
-    u_short value = myclient.port;
-    client.erase(remove_if(client.begin(), client.end(), [value](const Inf& client) { return client.port == value; }), client.end());
 
     return 0;
 }

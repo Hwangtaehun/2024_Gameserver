@@ -22,6 +22,7 @@ struct Inf
 
 static char buf[BUFSIZE + 1];
 static vector<Inf> client;
+static CRITICAL_SECTION   hCriticalSection;
 
 class Server
 {
