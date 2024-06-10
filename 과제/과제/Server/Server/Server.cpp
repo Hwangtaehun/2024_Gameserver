@@ -140,12 +140,6 @@ DWORD Server::ProcessClient(LPVOID arg)
         }
     }
 
-    /*retval = send(client_sock, start, pk.GetSize(), 0);
-    if (retval == SOCKET_ERROR) {
-        Err_display("send()");
-        return 0;
-    }*/
-
     while (1) {
         // 데이터 받기
         retval = recv(client_sock, buf, BUFSIZE, 0);
@@ -167,6 +161,7 @@ DWORD Server::ProcessClient(LPVOID arg)
             pk.SendAllMove();
         }
         else if (req_dis == pk.GetType()) {
+            timer = time(NULL);
             t = localtime(&timer);
             sprintf(buf, "%d년 %d월 %d일 %d시 %d분 %d초 %s",
                 t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, inet_ntoa(clientaddr.sin_addr));

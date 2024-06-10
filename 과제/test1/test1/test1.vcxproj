@@ -139,11 +139,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ClientPacket.cpp" />
     <ClCompile Include="Packet.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ServerPacket.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ClientPacket.h" />
     <ClInclude Include="Packet.h" />
+    <ClInclude Include="ServerPacket.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

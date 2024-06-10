@@ -27,19 +27,19 @@
 //	return 0;
 //}
 
-int main() {
-	Packet pc = Packet();
-	char buf[BUFSIZE];
-
-	pc.SendMsg("가나다");
-	pc.Print();
-	memcpy(buf, pc.GetBuf(), pc.GetSize());
-	pc.~Packet();
-
-	Packet opc = Packet();
-	opc.RecvMsg(buf);
-	opc.GetData(buf);
-	printf("%s\n", buf);
-
-	return 0;
-}
+//int main() {
+//	Packet pc = Packet();
+//	char buf[BUFSIZE];
+//
+//	pc.SendMsg("가나다");
+//	pc.Print();
+//	memcpy(buf, pc.GetBuf(), pc.GetSize());
+//	pc.~Packet();
+//
+//	Packet opc = Packet();
+//	opc.RecvMsg(buf);
+//	opc.GetData(buf);
+//	printf("%s\n", buf);
+//
+//	return 0;
+//}
