@@ -582,6 +582,23 @@
 										},
 										{
 											"_type": "UMLOperationView",
+											"_id": "AAAAAAGQAdGrEoxZk0c=",
+											"_parent": {
+												"$ref": "AAAAAAGP+9Q1CNHTVgY="
+											},
+											"model": {
+												"$ref": "AAAAAAGQAdGrBoxWx24="
+											},
+											"font": "Arial;13;0",
+											"left": 21,
+											"top": 444,
+											"width": 213.17041015625,
+											"height": 13,
+											"text": "+GetName(): char*",
+											"horizontalAlignment": 0
+										},
+										{
+											"_type": "UMLOperationView",
 											"_id": "AAAAAAGP+91SFdL+KLw=",
 											"_parent": {
 												"$ref": "AAAAAAGP+9Q1CNHTVgY="
@@ -591,7 +608,7 @@
 											},
 											"font": "Arial;13;0",
 											"left": 21,
-											"top": 444,
+											"top": 459,
 											"width": 213.17041015625,
 											"height": 13,
 											"text": "+Check(): bool",
@@ -606,6 +623,7 @@
 											"model": {
 												"$ref": "AAAAAAGP+92QB9ME3mk="
 											},
+											"visible": false,
 											"font": "Arial;13;0",
 											"left": 21,
 											"top": 459,
@@ -1379,7 +1397,7 @@
 											"top": 468,
 											"width": 240.08447265625,
 											"height": 13,
-											"text": "+Run()",
+											"text": "+Run(char*)",
 											"horizontalAlignment": 0
 										}
 									],
@@ -2607,6 +2625,25 @@
 						},
 						{
 							"_type": "UMLOperation",
+							"_id": "AAAAAAGQAdGrBoxWx24=",
+							"_parent": {
+								"$ref": "AAAAAAGP+9Q1B9HKaa0="
+							},
+							"name": "GetName",
+							"parameters": [
+								{
+									"_type": "UMLParameter",
+									"_id": "AAAAAAGQAdHiloyx8ig=",
+									"_parent": {
+										"$ref": "AAAAAAGQAdGrBoxWx24="
+									},
+									"type": "char*",
+									"direction": "return"
+								}
+							]
+						},
+						{
+							"_type": "UMLOperation",
 							"_id": "AAAAAAGP+91SEtL79zU=",
 							"_parent": {
 								"$ref": "AAAAAAGP+9Q1B9HKaa0="
@@ -2976,7 +3013,18 @@
 							"_parent": {
 								"$ref": "AAAAAAGP++QiytO1RtU="
 							},
-							"name": "Run"
+							"name": "Run",
+							"parameters": [
+								{
+									"_type": "UMLParameter",
+									"_id": "AAAAAAGQAdNH7Y2mRA8=",
+									"_parent": {
+										"$ref": "AAAAAAGP++bVqtQsNmA="
+									},
+									"name": "char*",
+									"type": ""
+								}
+							]
 						}
 					]
 				}

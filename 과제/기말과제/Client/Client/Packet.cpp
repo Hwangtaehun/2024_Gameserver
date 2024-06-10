@@ -225,12 +225,12 @@ void Packet::SendMsg(char* msg)
 	size = (short)strlen(data) + 6;
 }
 
-void Packet::SChatMsg(int port)
+void Packet::SChatMsg(char* name)
 {
 	char temp[DATASIZE] = {};
 
 	RecvMsg(buf);
-	sprintf(temp, "[%d]%s\0", port, data);
+	sprintf(temp, "[%s]%s\0", name, data);
 	sprintf(data, "%s\0", temp);
 	size = (short)strlen(data) + 6;
 }
