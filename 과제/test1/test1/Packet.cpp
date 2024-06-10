@@ -242,6 +242,22 @@ char* Packet::GetBuf() //직렬화
 	return buf;
 }
 
+char* Packet::GetBuf(int port) //직렬화
+{
+	RecvMsg(buf);
+
+	sprintf(data, "%d-%s\0", port, data);
+	size = (short)strlen(data) + 6;
+
+	memset(buf, 0, sizeof(buf));
+	memcpy(buf, &size, sizeof(size));
+	memcpy(buf + sizeof(size), &type, sizeof(type));
+	memcpy(buf + sizeof(size) + sizeof(type), data, strlen(data));
+	memcpy(buf + sizeof(size) + sizeof(type) + strlen(data), &endmark, sizeof(endmark));
+
+	return buf;
+}
+
 int Packet::GetSize()
 {
 	return (int)size;

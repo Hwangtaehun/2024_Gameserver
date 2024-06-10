@@ -33,8 +33,9 @@ void Client::Run()
     Packet pk = Packet();
     HANDLE hThread;
 
-    sprintf(buf, "connect");
-    retval = send(sock, buf, strlen(buf), 0);
+    pk.SetConnect(MyIP());
+    memcpy(buf, pk.GetBuf(), pk.GetSize());
+    retval = send(sock, buf, pk.GetSize(), 0);
     if (retval == SOCKET_ERROR) {
         Err_display("send()");
         return;
@@ -71,7 +72,7 @@ void Client::Run()
         
 
         if(me == 'X'){
-            pk.SetClose(SERVERIP);
+            pk.SetClose(MyIP());
             memcpy(buf, pk.GetBuf(), pk.GetSize());
         }
         else if (me != 'C' && me != 'M') {
@@ -92,7 +93,7 @@ void Client::Run()
                 break;
 
             if (me == 'M') {
-                pk.SetMove(SERVERIP, buf);
+                pk.SetMove(MyIP(), buf);
                 if (!pk.Check()) {
                     printf("좌표를 잘못 입력했습니다. 다시 입력해주세요.");
                     continue;
@@ -111,7 +112,7 @@ void Client::Run()
             Err_display("send()");
             break;
         }
-        printf("[TCP 클라이언트] %d바이트를 보냈습니다.\n", retval);
+
         if (me == 'X') {
             break;
         }
@@ -119,6 +120,39 @@ void Client::Run()
 
     if (hThread == NULL) { closesocket(sock); }
     else { CloseHandle(hThread); }
+}
+
+char* Client::MyIP()
+{
+    char* ip = {};
+    if (SERVERIP != "127.0.0.1") {
+        char hostname[256];
+        struct hostent* host_entry;
+
+        // 호스트 이름 가져오기
+        if (gethostname(hostname, sizeof(hostname)) == SOCKET_ERROR) {
+            printf("Error getting hostname: %d\n", WSAGetLastError());
+            WSACleanup();
+            return "error";
+        }
+
+        // 호스트 엔트리 가져오기
+        if ((host_entry = gethostbyname(hostname)) == NULL) {
+            printf("Error getting host entry: %d\n", WSAGetLastError());
+            WSACleanup();
+            return "error";
+        }
+
+        // IP 주소 가져오기 및 출력
+        for (int i = 0; host_entry->h_addr_list[i] != 0; ++i) {
+            ip = inet_ntoa(*(struct in_addr*)host_entry->h_addr_list[i]);
+        }
+    }
+    else {
+        ip = "127.0.0.1";
+    }
+
+    return ip;
 }
 
 // 소켓 함수 오류 출력 후 종료
@@ -170,7 +204,7 @@ DWORD __stdcall Client::ThreadRecv(LPVOID arg)
         buf[retval] = '\0';
         pk.RecvMsg(buf);
         pk.GetData(buf);
-        printf("[TCP 클라이언트] %d바이트를 받았습니다.\n", retval);
+
         printf("[받은 데이터] %s\n", buf);
     }
 

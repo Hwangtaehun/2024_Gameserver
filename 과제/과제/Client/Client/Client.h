@@ -27,6 +27,7 @@ private:
     char buf[BUFSIZE + 1];
     int len;
 
+    char* MyIP();
     static void Err_quit(const char* msg);
     static void Err_display(const char* msg);
     static DWORD WINAPI ThreadRecv(LPVOID arg);

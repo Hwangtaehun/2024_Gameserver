@@ -186,6 +186,16 @@ void Packet::SendMsg(char* msg)
 	size = (short)strlen(data) + 6;
 }
 
+void Packet::SChatMsg(int port)
+{
+	char temp[DATASIZE] = {};
+
+	RecvMsg(buf);
+	sprintf(temp, "%d-%s\0", port, data);
+	sprintf(data, "%s\0", temp);
+	size = (short)strlen(data) + 6;
+}
+
 void Packet::SetClose(char* msg)
 {
 	type = req_dis;

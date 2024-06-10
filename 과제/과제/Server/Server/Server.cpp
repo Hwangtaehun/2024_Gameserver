@@ -123,17 +123,28 @@ DWORD Server::ProcessClient(LPVOID arg)
 
     // 받은 데이터 출력
     start[retval] = '\0';
+    pk.RecvMsg(start);
+    pk.GetData(start);
+    printf("%s\n", start);
 
     sprintf(start, "%d년 %d월 %d일 %d시 %d분 %d초 %s",
         t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, inet_ntoa(clientaddr.sin_addr));
     pk.SendAllConnect(start);
     memcpy(start, pk.GetBuf(), pk.GetSize());
 
-    retval = send(client_sock, start, pk.GetSize(), 0);
+    for (int i = 0; i < client.size(); i++) {
+        retval = send(client[i].socket, start, pk.GetSize(), 0);
+        if (retval == SOCKET_ERROR) {
+            Err_display("send()");
+            break;
+        }
+    }
+
+    /*retval = send(client_sock, start, pk.GetSize(), 0);
     if (retval == SOCKET_ERROR) {
         Err_display("send()");
         return 0;
-    }
+    }*/
 
     while (1) {
         // 데이터 받기
@@ -156,6 +167,7 @@ DWORD Server::ProcessClient(LPVOID arg)
             pk.SendAllMove();
         }
         else if (req_dis == pk.GetType()) {
+            t = localtime(&timer);
             sprintf(buf, "%d년 %d월 %d일 %d시 %d분 %d초 %s",
                 t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, inet_ntoa(clientaddr.sin_addr));
             pk.SetClose(buf);
@@ -164,19 +176,20 @@ DWORD Server::ProcessClient(LPVOID arg)
         EnterCriticalSection(&hCriticalSection);
 
         // 데이터 보내기
+        if (chat_string == pk.GetType()) {
+            pk.SChatMsg((int)myclient.port);
+        }
+        
         memcpy(buf, pk.GetBuf(), pk.GetSize());
         for (int i = 0; i < client.size(); i++) {
-            retval = send(client[i].socket, buf, pk.GetSize(), 0);
-            if (retval == SOCKET_ERROR) {
-                Err_display("send()");
-                break;
+            if (myclient.port != client[i].port) {
+                retval = send(client[i].socket, buf, pk.GetSize(), 0);
+                if (retval == SOCKET_ERROR) {
+                    Err_display("send()");
+                    break;
+                }
             }
         }
-        /*retval = send(client_sock, buf, pk.GetSize(), 0);
-        if (retval == SOCKET_ERROR) {
-            Err_display("send()");
-            break;
-        }*/
 
         LeaveCriticalSection(&hCriticalSection);
 

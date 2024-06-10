@@ -42,6 +42,7 @@ public:
 	void SendAllMove();
 	void RecvMsg(char* str);
 	void SendMsg(char* msg);
+	void SChatMsg(int port);
 	void SetClose(char* msg);
 	void GetData(char* temp);
 	char* GetBuf();
