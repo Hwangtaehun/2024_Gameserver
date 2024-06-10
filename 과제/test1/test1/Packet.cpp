@@ -186,6 +186,16 @@ void Packet::SendMsg(char* msg)
 	size = (short)strlen(data) + 6;
 }
 
+void Packet::SChatMsg(int port)
+{
+	char temp[DATASIZE] = {};
+
+	RecvMsg(buf);
+	sprintf(temp, "%d-%s\0", port, data);
+	sprintf(data, "%s\0", temp);
+	size = (short)strlen(data) + 6;
+}
+
 void Packet::SetClose(char* msg)
 {
 	type = req_dis;
@@ -233,22 +243,6 @@ void Packet::GetData(char* temp)
 
 char* Packet::GetBuf() //직렬화
 {
-	memset(buf, 0, sizeof(buf));
-	memcpy(buf, &size, sizeof(size));
-	memcpy(buf + sizeof(size), &type, sizeof(type));
-	memcpy(buf + sizeof(size) + sizeof(type), data, strlen(data));
-	memcpy(buf + sizeof(size) + sizeof(type) + strlen(data), &endmark, sizeof(endmark));
-
-	return buf;
-}
-
-char* Packet::GetBuf(int port) //직렬화
-{
-	RecvMsg(buf);
-
-	sprintf(data, "%d-%s\0", port, data);
-	size = (short)strlen(data) + 6;
-
 	memset(buf, 0, sizeof(buf));
 	memcpy(buf, &size, sizeof(size));
 	memcpy(buf + sizeof(size), &type, sizeof(type));
