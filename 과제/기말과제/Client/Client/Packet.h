@@ -32,7 +32,7 @@ private:
 
 	void Separate(char* ip);
 	void Separate(char* ip, char* x, char* y, char* z);
-	void Separate(char* data, float* x, float* y, float* z);
+	void Separate(char* msg, float* x, float* y, float* z);
 	int Input(char* value, int i, int len);
 	int Input(char* msg, char* value, int i, int len);
 public:
