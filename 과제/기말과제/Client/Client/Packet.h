@@ -19,6 +19,10 @@ enum Type {
 
 class Packet {
 private:
+	float m_x;
+	float m_y;
+	float m_z;
+
 	void Separate(char* ip);
 	void Separate(char* ip, char* x, char* y, char* z);
 	int Input(char* value, int i, int len);
@@ -26,9 +30,6 @@ protected:
 	short size;
 	short type;
 	short endmark;
-	float m_x;
-	float m_y;
-	float m_z;
 	char name[21] = {};
 	char buf[BUFSIZE + 1] = {};
 	char data[DATASIZE + 1] = {};
