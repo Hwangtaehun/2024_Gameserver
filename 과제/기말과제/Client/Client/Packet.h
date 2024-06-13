@@ -19,33 +19,23 @@ enum Type {
 
 class Packet {
 private:
-	bool crt;
+	void Separate(char* ip);
+	void Separate(char* ip, char* x, char* y, char* z);
+	int Input(char* value, int i, int len);
+protected:
 	short size;
 	short type;
 	short endmark;
-	float m_x; 
+	float m_x;
 	float m_y;
 	float m_z;
 	char name[21] = {};
 	char buf[BUFSIZE + 1] = {};
 	char data[DATASIZE + 1] = {};
-
-	void Separate(char* ip);
-	void Separate(char* ip, char* x, char* y, char* z);
-	void Separate(char* msg, float* x, float* y, float* z);
-	int Input(char* value, int i, int len);
-	int Input(char* msg, char* value, int i, int len);
 public:
 	Packet();
-	Packet(char* nickname);
 	~Packet();
-	void SetConnect(char* ip);
-	void SendAllConnect(char* msg);
-	void SetMove(char* ip, char* msg);
-	void SendAllMove();
 	void RecvMsg(char* str);
-	void SendMsg(char* msg);
-	void SChatMsg(char* name);
 	void SetClose(char* msg);
 	void GetData(char* temp);
 	char* GetBuf();
@@ -53,5 +43,4 @@ public:
 	int GetType();
 	void GetPos(float* x, float* y, float* z);
 	char* GetName();
-	bool Check();
 };

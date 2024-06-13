@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <vector>
-#include "Packet.h"
+#include "ServerPacket.h"
 
 #define SERVERPORT 9000
 #define BUFSIZE    512

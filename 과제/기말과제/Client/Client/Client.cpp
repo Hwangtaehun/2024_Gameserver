@@ -30,7 +30,7 @@ void Client::Ready()
 
 void Client::Run(char* name)
 {
-    Packet pk = Packet(name);
+    ClientPacket pk = ClientPacket(name);
     HANDLE hThread;
 
     pk.SetConnect(MyIP());

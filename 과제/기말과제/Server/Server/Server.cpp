@@ -94,7 +94,7 @@ DWORD Server::ProcessClient(LPVOID arg)
     int retval;
     SOCKADDR_IN clientaddr;
     int addrlen;
-    Packet pk = Packet();
+    ServerPacket pk = ServerPacket();
     Inf myclient;
 
     // 클라이언트 정보 얻기
