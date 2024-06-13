@@ -103,13 +103,13 @@ DWORD Server::ProcessClient(LPVOID arg)
 
     //접속 시간
     time_t timer;
-    char start[BUFSIZE + 1];
+    char m_buf[BUFSIZE + 1];
     timer = time(NULL);
     struct tm* t;
     t = localtime(&timer);
 
     // 데이터 받기
-    retval = recv(client_sock, start, BUFSIZE, 0);
+    retval = recv(client_sock, m_buf, BUFSIZE, 0);
     if (retval == SOCKET_ERROR) {
         Err_display("recv()");
         return 0;
@@ -118,9 +118,9 @@ DWORD Server::ProcessClient(LPVOID arg)
         return 0;
 
     // 받은 데이터 출력
-    start[retval] = '\0';
-    pk.RecvMsg(start);
-    pk.GetData(start);
+    m_buf[retval] = '\0';
+    pk.RecvMsg(m_buf);
+    pk.GetData(m_buf);
 
     //클라이언트 정보 백터형식으로 추가
     strcpy(myclient.ip, inet_ntoa(clientaddr.sin_addr));
@@ -128,16 +128,16 @@ DWORD Server::ProcessClient(LPVOID arg)
     myclient.socket = client_sock;
     strcpy(myclient.name, pk.GetName());
     client.push_back(myclient);
-    printf("%s\n", start);
+    printf("%s\n", m_buf);
 
     //클라이언트의 연결 성공 시 서버는 연결되어 있는 모든 클라이언트에게 보내기
-    sprintf(start, "%d년 %d월 %d일 %d시 %d분 %d초 %s",
+    sprintf(m_buf, "%d년 %d월 %d일 %d시 %d분 %d초 %s",
         t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, inet_ntoa(clientaddr.sin_addr));
-    pk.SendAllConnect(start);
-    memcpy(start, pk.GetBuf(), pk.GetSize());
+    pk.SendAllConnect(m_buf);
+    memcpy(m_buf, pk.GetBuf(), pk.GetSize());
 
     for (int i = 0; i < client.size(); i++) {
-        retval = send(client[i].socket, start, pk.GetSize(), 0);
+        retval = send(client[i].socket, m_buf, pk.GetSize(), 0);
         if (retval == SOCKET_ERROR) {
             Err_display("send()");
             break;
@@ -146,7 +146,7 @@ DWORD Server::ProcessClient(LPVOID arg)
 
     while (1) {
         // 데이터 받기
-        retval = recv(client_sock, buf, BUFSIZE, 0);
+        retval = recv(client_sock, m_buf, BUFSIZE, 0);
         if (retval == SOCKET_ERROR) {
             Err_display("recv()");
             break;
@@ -155,11 +155,11 @@ DWORD Server::ProcessClient(LPVOID arg)
             break;
 
         // 받은 데이터 출력
-        buf[retval] = '\0';
-        pk.RecvMsg(buf);
-        pk.GetData(buf);
+        m_buf[retval] = '\0';
+        pk.RecvMsg(m_buf);
+        pk.GetData(m_buf);
         printf("[TCP/%s:%d] %s\n", inet_ntoa(clientaddr.sin_addr),
-            ntohs(clientaddr.sin_port), buf);
+            ntohs(clientaddr.sin_port), m_buf);
 
         if (req_move == pk.GetType()) {
             pk.SendAllMove();
@@ -167,9 +167,9 @@ DWORD Server::ProcessClient(LPVOID arg)
         else if (req_dis == pk.GetType()) {
             timer = time(NULL);
             t = localtime(&timer);
-            sprintf(buf, "%d년 %d월 %d일 %d시 %d분 %d초 %s",
+            sprintf(m_buf, "%d년 %d월 %d일 %d시 %d분 %d초 %s",
                 t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, inet_ntoa(clientaddr.sin_addr));
-            pk.SetClose(buf);
+            pk.SetClose(m_buf);
         }
 
         EnterCriticalSection(&hCriticalSection);
