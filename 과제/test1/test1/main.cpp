@@ -1,4 +1,5 @@
-#include "Packet.h"
+#include "ClientPacket.h"
+#include "ServerPacket.h"
 #define SERVERIP   "127.0.0.1"
 
 //int main() {
@@ -43,3 +44,44 @@
 //
 //	return 0;
 //}
+
+int main() {
+	char buf[BUFSIZE] = {};
+	char buf2[BUFSIZE] = {};
+	ClientPacket cp = ClientPacket("AA");
+	ServerPacket sp = ServerPacket();
+
+	//접속
+	cp.SetConnect(SERVERIP);
+	memcpy(buf, cp.GetBuf(), cp.GetSize());
+
+	sp.RecvMsg(buf);
+	sp.GetData(buf2);
+	printf("연결: %s\n", buf2);
+
+	//클라이언트 접속 전체 전송
+	sp.SendAllConnect(buf2);
+	memcpy(buf2, sp.GetBuf(), sp.GetSize());
+
+	cp.RecvMsg(buf2);
+	cp.GetData(buf);
+	printf("전체 연결: %s\n", buf);
+
+	//클라이언트 이동
+	cp.SetMove(SERVERIP, "100,100,100");
+	memcpy(buf, cp.GetBuf(), cp.GetSize());
+
+	sp.RecvMsg(buf);
+	sp.GetData(buf2);
+	printf("클라이언트 이동: %s\n", buf2);
+
+	//서버가 모든 클라이언트에게 전송
+	sp.SendAllMove();
+	memcpy(buf2, sp.GetBuf(), sp.GetSize());
+
+	cp.RecvMsg(buf2);
+	cp.GetData(buf);
+	printf("전체 이동: %s\n", buf);
+
+	return 0;
+}
