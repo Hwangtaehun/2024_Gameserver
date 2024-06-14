@@ -66,7 +66,8 @@ void Client::Run(char* name)
         }
         else {
             //메뉴 선택
-            me = getchar();
+            //me = getchar();
+            scanf("%s", &me);
             getchar();
         }
         
