@@ -155,15 +155,14 @@ void Packet::GetData(char* temp)
 	}
 }
 
-char* Packet::GetBuf() //직렬화
+void Packet::GetBuf(char *msg) //직렬화
 {
 	memset(buf, 0, sizeof(buf));
 	memcpy(buf, &size, sizeof(size));
 	memcpy(buf + sizeof(size), &type, sizeof(type));
 	memcpy(buf + sizeof(size) + sizeof(type), data, strlen(data));
 	memcpy(buf + sizeof(size) + sizeof(type) + strlen(data), &endmark, sizeof(endmark));
-
-	return buf;
+	memcpy(msg, &buf, size);
 }
 
 int Packet::GetSize()

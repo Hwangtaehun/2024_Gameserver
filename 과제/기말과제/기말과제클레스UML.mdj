@@ -408,7 +408,7 @@
 											"top": 322,
 											"width": 213.17041015625,
 											"height": 13,
-											"text": "+GetBuf(): char*",
+											"text": "+GetBuf(char*)",
 											"horizontalAlignment": 0
 										},
 										{
@@ -2926,12 +2926,12 @@
 							"parameters": [
 								{
 									"_type": "UMLParameter",
-									"_id": "AAAAAAGP+9zN+tLafgY=",
+									"_id": "AAAAAAGQH8eWNCxixjc=",
 									"_parent": {
 										"$ref": "AAAAAAGP+9xjANLTPcs="
 									},
-									"type": "char*",
-									"direction": "return"
+									"name": "char*",
+									"type": ""
 								}
 							]
 						},
