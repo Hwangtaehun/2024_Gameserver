@@ -34,7 +34,7 @@ void Client::Run(char* name)
     HANDLE hThread;
 
     pk.SetConnect(MyIP());
-    pk.GetBuf(buf);
+    memcpy(buf, pk.GetBuf(), pk.GetSize());
     retval = send(sock, buf, pk.GetSize(), 0);
     if (retval == SOCKET_ERROR) {
         Err_display("send()");
@@ -74,7 +74,7 @@ void Client::Run(char* name)
 
         if(me == 'X'){
             pk.SetClose(MyIP());
-            pk.GetBuf(buf);
+            memcpy(buf, pk.GetBuf(), pk.GetSize());
         }
         else if (me != 'C' && me != 'M') {
             printf("잘못 입력했습니다.\n");
@@ -99,11 +99,11 @@ void Client::Run(char* name)
                     printf("좌표를 잘못 입력했습니다. 다시 입력해주세요.");
                     continue;
                 }
-                pk.GetBuf(buf);
+                memcpy(buf, pk.GetBuf(), pk.GetSize());
             }
             else {
                 pk.SendMsg(buf);
-                pk.GetBuf(buf);
+                memcpy(buf, pk.GetBuf(), pk.GetSize());
             }
         }
 

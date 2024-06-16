@@ -1,6 +1,14 @@
 #include "Packet.h"
 
-Packet::Packet(){}
+Packet::Packet()
+{
+	size = 0;
+	type = -1;
+	endmark = 0xFF;
+	m_x = 0.0f;
+	m_y = 0.0f;
+	m_z = 0.0f;
+}
 
 Packet::~Packet(){}
 
@@ -147,14 +155,15 @@ void Packet::GetData(char* temp)
 	}
 }
 
-void Packet::GetBuf(char *msg) //직렬화
+char* Packet::GetBuf() //직렬화
 {
 	memset(buf, 0, sizeof(buf));
 	memcpy(buf, &size, sizeof(size));
 	memcpy(buf + sizeof(size), &type, sizeof(type));
 	memcpy(buf + sizeof(size) + sizeof(type), data, strlen(data));
 	memcpy(buf + sizeof(size) + sizeof(type) + strlen(data), &endmark, sizeof(endmark));
-	memcpy(msg, &buf, size);
+
+	return buf;
 }
 
 int Packet::GetSize()

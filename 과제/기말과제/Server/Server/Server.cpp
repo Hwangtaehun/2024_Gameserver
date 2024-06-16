@@ -137,7 +137,7 @@ DWORD Server::ProcessClient(LPVOID arg)
     sprintf(m_buf, "%d년 %d월 %d일 %d시 %d분 %d초 %s",
         t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, inet_ntoa(clientaddr.sin_addr));
     pk.SendAllConnect(m_buf);
-    pk.GetBuf(m_buf);
+    memcpy(m_buf, pk.GetBuf(), pk.GetSize());
 
     for (int i = 0; i < client.size(); i++) {
         retval = send(client[i].socket, m_buf, pk.GetSize(), 0);
@@ -182,7 +182,7 @@ DWORD Server::ProcessClient(LPVOID arg)
             pk.SChatMsg(myclient.name);
         }
         
-        pk.GetBuf(buf);
+        memcpy(buf, pk.GetBuf(), pk.GetSize());
         for (int i = 0; i < client.size(); i++) {
             if (myclient.port != client[i].port) {
                 retval = send(client[i].socket, buf, pk.GetSize(), 0);
