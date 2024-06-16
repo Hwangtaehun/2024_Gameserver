@@ -39,7 +39,7 @@ public:
 	void RecvMsg(char* str);
 	void SetClose(char* msg);
 	void GetData(char* temp);
-	char* GetBuf();
+	void GetBuf(char* msg);
 	int GetSize();
 	int GetType();
 	void GetPos(float* x, float* y, float* z);
