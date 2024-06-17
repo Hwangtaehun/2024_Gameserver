@@ -133,25 +133,21 @@ char* Client::MyIP()
 
     if (SERVERIP != "127.0.0.1") {
         char hostname[256];
-        struct hostent* host_entry;
+        struct hostent* hostinf;
 
         // 호스트 이름 가져오기
         if (gethostname(hostname, sizeof(hostname)) == SOCKET_ERROR) {
-            printf("Error getting hostname: %d\n", WSAGetLastError());
-            WSACleanup();
-            return "error";
+            Err_quit("host name error");
         }
 
-        // 호스트 엔트리 가져오기
-        if ((host_entry = gethostbyname(hostname)) == NULL) {
-            printf("Error getting host entry: %d\n", WSAGetLastError());
-            WSACleanup();
-            return "error";
+        // 호스트 정보 가져오기
+        if ((hostinf = gethostbyname(hostname)) == NULL) {
+            Err_quit("host entry error");
         }
 
         // IP 주소 가져오기 및 출력
-        for (int i = 0; host_entry->h_addr_list[i] != 0; ++i) {
-            ip = inet_ntoa(*(struct in_addr*)host_entry->h_addr_list[i]);
+        for (int i = 0; hostinf->h_addr_list[i] != 0; ++i) {
+            ip = inet_ntoa(*(struct in_addr*)hostinf->h_addr_list[i]);
         }
     }
     else {

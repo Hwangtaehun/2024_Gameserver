@@ -131,7 +131,7 @@ DWORD Server::ProcessClient(LPVOID arg)
     myclient.socket = client_sock;
     strcpy(myclient.name, pk.GetName());
     client.push_back(myclient);
-    printf("%s\n", m_buf);
+    printf("%s", m_buf);
 
     //클라이언트의 연결 성공 시 서버는 연결되어 있는 모든 클라이언트에게 보내기
     sprintf(m_buf, "%d년 %d월 %d일 %d시 %d분 %d초 %s",
