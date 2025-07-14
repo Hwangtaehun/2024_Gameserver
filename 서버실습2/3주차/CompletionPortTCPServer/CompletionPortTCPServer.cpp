@@ -7,18 +7,23 @@
 #include <time.h>
 #include <vector>
 #include <mutex>
+#include <queue>
+#include <string>
+#include <algorithm>
 
 #define SERVERPORT 9000
 #define BUFSIZE    512
 
+// 클라이언트별 상태를 저장하는 구조체
 struct SOCKETINFO {
     OVERLAPPED overlapped;
     SOCKET sock;
-    char buf[BUFSIZE + 1];
+    char buf[BUFSIZE + 1]; // 수신 버퍼
     int recvbytes;
     int sendbytes;
     WSABUF wsabuf;
-    bool sending;
+    bool sending; // 현재 송신 중 여부
+    std::queue<std::string> sendQueue; // 송신 대기열 (여러 메시지 처리)
 };
 
 std::vector<SOCKETINFO*> clients;
@@ -111,17 +116,31 @@ DWORD WINAPI WorkerThread(LPVOID arg) {
         }
 
         if (ptr->sending) {
+            // 송신 완료 처리
             ptr->sendbytes += cbTransferred;
             if (ptr->sendbytes < ptr->recvbytes) {
+                // 남은 데이터 추가 송신
                 send(ptr);
             }
             else {
-                ptr->recvbytes = ptr->sendbytes = 0;
+                // 현재 메시지 송신 완료, 다음 메시지 처리
                 ptr->sending = false;
-                receive(ptr);
+                ptr->recvbytes = ptr->sendbytes = 0;
+                if (!ptr->sendQueue.empty()) {
+                    std::string next_msg = ptr->sendQueue.front();
+                    ptr->sendQueue.pop();
+                    memcpy(ptr->buf, next_msg.c_str(), next_msg.size());
+                    ptr->recvbytes = next_msg.size();
+                    ptr->sending = true;
+                    send(ptr);
+                }
+                else {
+                    receive(ptr);
+                }
             }
         }
         else {
+            // 수신 완료 처리
             ptr->recvbytes = cbTransferred;
             ptr->buf[cbTransferred] = '\0';
 
@@ -138,31 +157,34 @@ DWORD WINAPI WorkerThread(LPVOID arg) {
     return 0;
 }
 
+// 클라이언트에게 메시지를 브로드캐스트 (전송큐에 삽입)
 void broadcast(SOCKETINFO* sender, const char* msg, int len) {
     std::lock_guard<std::mutex> lock(clients_mutex);
     for (auto client : clients) {
-        if (client->sock == sender->sock) continue;
-        if (client->sending) continue;
-        ZeroMemory(&client->overlapped, sizeof(client->overlapped));
-        memcpy(client->buf, msg, len);
-        client->recvbytes = len;
-        client->sendbytes = 0;
-        client->wsabuf.buf = client->buf;
-        client->wsabuf.len = len;
-        client->sending = true;
+        if (client->sock == sender->sock) continue; // 본인 제외
 
-        DWORD sendbytes;
-        int retval = WSASend(client->sock, &client->wsabuf, 1, &sendbytes, 0, &client->overlapped, NULL);
-        if (retval == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING)
-            err_display("broadcast WSASend()");
+        std::string message(msg, len);
+        client->sendQueue.push(message);
+
+        if (!client->sending) {
+            std::string next_msg = client->sendQueue.front();
+            client->sendQueue.pop();
+            memcpy(client->buf, next_msg.c_str(), next_msg.size());
+            client->recvbytes = next_msg.size();
+            client->sendbytes = 0;
+            client->sending = true;
+            send(client);
+        }
     }
 }
 
+// 클라이언트 연결 종료 시 리스트에서 삭제
 void remove_client(SOCKETINFO* ptr) {
     std::lock_guard<std::mutex> lock(clients_mutex);
     clients.erase(std::remove(clients.begin(), clients.end(), ptr), clients.end());
 }
 
+// 비동기 송신 처리
 bool send(SOCKETINFO* ptr) {
     ZeroMemory(&ptr->overlapped, sizeof(ptr->overlapped));
     ptr->wsabuf.buf = ptr->buf + ptr->sendbytes;
@@ -174,6 +196,7 @@ bool send(SOCKETINFO* ptr) {
     return retval == SOCKET_ERROR;
 }
 
+// 비동기 수신 처리
 bool receive(SOCKETINFO* ptr) {
     ZeroMemory(&ptr->overlapped, sizeof(ptr->overlapped));
     ptr->wsabuf.buf = ptr->buf;
@@ -185,6 +208,7 @@ bool receive(SOCKETINFO* ptr) {
     return retval == SOCKET_ERROR;
 }
 
+// 치명적 오류 발생 시 종료
 void err_quit(char* msg) {
     LPVOID lpMsgBuf;
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, WSAGetLastError(),
@@ -194,6 +218,7 @@ void err_quit(char* msg) {
     exit(1);
 }
 
+// 오류 메시지 출력
 void err_display(char* msg) {
     LPVOID lpMsgBuf;
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, WSAGetLastError(),
